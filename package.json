@@ -12,13 +12,19 @@
   },
   "dependencies": {
     "@nuxt/http": "latest",
+    "bcrypt": "^5.0.1",
+    "dotenv": "^8.2.0",
     "express": "latest",
-    "nuxt": "latest"
+    "mysql": "^2.18.1",
+    "nuxt": "latest",
+    "nuxt-socket-io": "^1.1.14",
+    "socket.io": "^4.0.0"
   },
   "devDependencies": {
     "@nuxt/types": "~2.15.0",
     "@nuxtjs/eslint-config": "^5.0.0",
     "@nuxtjs/eslint-module": "^3.0.2",
+    "@nuxtjs/vuetify": "^1.11.3",
     "babel-eslint": "^10.1.0",
     "eslint": "^7.20.0",
     "eslint-plugin-nuxt": "^2.0.0"

@@ -1,0 +1,13 @@
+version: "3"
+services:
+  team-chat-app-mysql:
+    image: mysql:8.0.23
+    command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: team-chat-app
+    ports:
+      - "33061:3306"
+    volumes:
+      - ./db/ddl.sql:/docker-entrypoint-initdb.d/init.sql
