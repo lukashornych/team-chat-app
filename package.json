@@ -18,7 +18,8 @@
     "mysql": "^2.18.1",
     "nuxt": "latest",
     "nuxt-socket-io": "^1.1.14",
-    "socket.io": "^4.0.0"
+    "socket.io": "^4.0.0",
+    "vuelidate": "^0.7.6"
   },
   "devDependencies": {
     "@nuxt/types": "~2.15.0",
