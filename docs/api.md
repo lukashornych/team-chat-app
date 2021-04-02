@@ -133,6 +133,7 @@ body
 }
 ```
 return jwt or cookie ???
+also return full user object
 
 ###  post - register
 body
