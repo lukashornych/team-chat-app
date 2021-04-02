@@ -5,7 +5,7 @@ export default {
   name: 'CreatePrivateGroupDialog',
 
   fetch () {
-    // todo server, check for already in channel users, check in other theses call too
+    // todo server docuemnted
     this.selectableUsers = [
       {
         text: 'Lukáš',
@@ -40,6 +40,7 @@ export default {
       this.showCreatePrivateGroupDialog = false
       this.name = ''
       this.description = ''
+      this.users = []
       this.$v.$reset()
     },
 
@@ -47,7 +48,12 @@ export default {
       this.$v.$touch()
 
       if (!this.$v.$invalid) {
-        console.log('sending requests') // todo: api
+        const request = {
+          name: this.name,
+          description: this.description,
+          userIds: this.users.map(u => u.id)
+        }
+        console.log('sending requests') // todo: server documented
 
         this.close()
       }

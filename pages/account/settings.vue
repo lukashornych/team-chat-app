@@ -32,7 +32,7 @@ export default {
   },
 
   fetch () {
-    // todo server
+    // todo server documented
     if (this.$store.getters) {
       this.registrationInvitations = [
         {
@@ -71,12 +71,12 @@ export default {
       this.$v.account.$touch()
 
       if (!this.$v.account.$invalid) {
-        // todo server
+        // todo server documented
       }
     },
 
     generateRegistrationCode () {
-      // todo: server
+      // todo: server documented
       this.$fetch()
     },
 
@@ -93,7 +93,7 @@ export default {
     },
 
     saveEditingUserRole () {
-      // todo: server
+      // todo: server documented
       this.$fetch()
     }
   }

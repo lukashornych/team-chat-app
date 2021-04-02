@@ -33,7 +33,7 @@ export default {
       this.$v.$touch()
 
       if (!this.$v.$invalid) {
-        // todo server
+        // todo server documented
       }
     }
   },

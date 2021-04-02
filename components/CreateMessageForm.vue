@@ -31,7 +31,7 @@ export default {
         return
       }
 
-      // todo: send to server
+      // todo: send to server documented
       const newMessageRequest = {
         channelId: this.channelId,
         threadId: this.threadId,

@@ -14,8 +14,8 @@ export default {
   },
 
   fetch () {
-    // todo server
-    // todo fetch user
+    // todo server documented
+    // todo fetch user documented
     this.channels = [
       {
         id: 1,
@@ -86,7 +86,7 @@ export default {
     },
 
     acceptChannelInvitation (channelInvitation) {
-      // todo server
+      // todo server documented
       this.$fetch()
     }
   }

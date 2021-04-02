@@ -31,7 +31,7 @@ export default {
       this.$v.$touch()
 
       if (!this.$v.$invalid) {
-        console.log('sending requests') // todo: server
+        console.log('sending requests') // todo: server documented
 
         this.close()
       }
