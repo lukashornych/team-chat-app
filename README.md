@@ -12,4 +12,8 @@ discarded by `docker-compose down`.
 
 ## Running
 
-Application can be run for local development using command `nuxt`. Other options are specified in `package.json` file.
+Application can be run for local development using command `yarn dev`. Other options are specified in `package.json` file.
+
+## Server API documentation
+
+Server API documentation can be found [here](docs/api.md).
