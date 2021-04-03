@@ -3,10 +3,159 @@
 **WIP**
 
 ## REST API
-### get - list of users invitable to channel
+
+<hr/>
+
+<i>Soubor <b>'accounts.js'</b></i>
+
+### ✔ POST /login
+post - login
+
+body
+```
+{
+  username: '',
+  password: ''
+}
+```
+return jwt or cookie ???
+also return full user object
+
+return
+```
+➜ status 200 - OK
+{
+  token : tokentokentokentoken
+}
+      token body
+      {
+        id: id,
+        username: username,
+        name: name,
+        role: role
+      }
+
+
+➜ status 500 - Internal Server Error
+➜ status 400 - Bad Request
+```
+### ✔ POST /register
+post - register
+
+body
+```
+{
+  code: '',
+  name: '',
+  username: '',
+  password: ''
+}
+```
+return
+```
+➜ status 200 - OK
+➜ status 500 - Internal Server Error
+➜ status 400 - unknown-code
+➜ status 400 - user-exists
+```
+
+### ✔ PUT /updateAccount
+put - update user account
+
+body
+```
+{
+  userId: 1,
+  name: 'Name,
+  username: 'username',
+  newPassword: ''
+}
+```
+return
+```
+➜ status 200 - OK
+➜ status 500 - Internal Server Error
+```
+
+### ✔ PUT /updateAccountRole
+put - update user role
+
+body
+```
+{
+  userId: 1,
+  role: 'role1'
+}
+```
+maybe merge with user update endpoint???
+
+return
+```
+➜ status 200 - OK
+➜ status 500 - Internal Server Error
+```
+
+### ✔ GET /getAllAccounts
+get - list of all users
+
+return
+```
+[
+  {
+    id: id,
+    name: name,
+    username: username,
+    role: role
+  },
+]
+
+{   // požadované, NEPLATÍ!
+  text: 'Lukáš',
+  value: 1
+}
+```
+or full user objects
+
+<hr/>
+
+<i>Soubor <b>'channels.js'</b></i>
+
+
+
+### ✔ POST /newChannel
+post - new channel/group
+
+body
+```
+{
+  type: 'PRIVATE_GROUP' // or public channel
+  name: 'group',
+  description: 'desc',
+  userIds: [...] // only for group
+}
+```
+return
+```
+➜ status 200 - OK
+➜ status 500 - Internal Server Error
+➜ status 400 - Bad Request
+```
+
+
+<hr/>
+
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+
+
+###??? get - list of users invitable to channel ???
 - params
   - channelId
-  
+
 return
 ```
 {
@@ -22,27 +171,6 @@ body
 {
   channelId: 1,
   userIds: []
-}
-```
-
-### get - list of all users
-return
-```
-{
-  text: 'Lukáš',
-  value: 1
-}
-```
-or full user objects
-
-### post - new channel/group
-body
-```
-{
-  type: 'PRIVATE_GROUP' // or public channel
-  name: 'group',
-  description: 'desc',
-  userIds: [...] // only for group
 }
 ```
 
@@ -100,51 +228,12 @@ return
 }
 ```
 
-### put - update user account 
-body
-```
-{
-  userId: 1,
-  name: 'Name,
-  username: 'username',
-  newPassword: ''
-}
-```
 
-### put - update user role
-body
-```
-{
-  userId: 1,
-  role: ''
-}
-```
-maybe merge with user update endpoint???
 
 ### post - generate new registration invitation
 body empty
 
-### post - login
-body
-```
-{
-  username: '',
-  password: ''
-}
-```
-return jwt or cookie ???
-also return full user object
 
-###  post - register
-body
-```
-{
-  code: '',
-  name: '',
-  username: '',
-  password: ''
-}
-```
 
 ## Socket.io API
 ### emit new message
