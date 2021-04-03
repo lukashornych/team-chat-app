@@ -11,7 +11,7 @@
 ### ✔ POST /login
 post - login
 
-body
+***Body:***
 ```
 {
   username: '',
@@ -21,7 +21,7 @@ body
 return jwt or cookie ???
 also return full user object
 
-return
+***Return:***
 ```
 ➜ status 200 - OK
 {
@@ -42,7 +42,7 @@ return
 ### ✔ POST /register
 post - register
 
-body
+***Body:***
 ```
 {
   code: '',
@@ -51,7 +51,7 @@ body
   password: ''
 }
 ```
-return
+***Return:***
 ```
 ➜ status 200 - OK
 ➜ status 500 - Internal Server Error
@@ -62,7 +62,7 @@ return
 ### ✔ PUT /updateAccount
 put - update user account
 
-body
+***Body:***
 ```
 {
   userId: 1,
@@ -71,16 +71,17 @@ body
   newPassword: ''
 }
 ```
-return
+***Return:***
 ```
 ➜ status 200 - OK
 ➜ status 500 - Internal Server Error
+➜ status 400 - Bad Request
 ```
 
 ### ✔ PUT /updateAccountRole
 put - update user role
 
-body
+***Body:***
 ```
 {
   userId: 1,
@@ -89,17 +90,19 @@ body
 ```
 maybe merge with user update endpoint???
 
-return
+***Return:***
 ```
 ➜ status 200 - OK
 ➜ status 500 - Internal Server Error
+➜ status 400 - Bad Request
 ```
 
 ### ✔ GET /getAllAccounts
 get - list of all users
 
-return
+***Return:***
 ```
+➜ status 200 - OK
 [
   {
     id: id,
@@ -109,11 +112,12 @@ return
   },
 ]
 
-{   // požadované, NEPLATÍ!
-  text: 'Lukáš',
-  value: 1
-}
+➜ status 500 - Internal Server Error
 ```
+{ 
+text: 'Lukáš',
+value: 1
+}
 or full user objects
 
 <hr/>
