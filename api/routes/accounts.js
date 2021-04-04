@@ -88,7 +88,7 @@ router.post('/login', (req, res) => {
           res.sendStatus(200);
 
         } else {
-          res.sendStatus(400); // ??????????
+          res.sendStatus(403); // ??????????
         }
       });
 
@@ -190,14 +190,25 @@ const authenticateToken = function (req, res, callback) {
   if(!req.cookies["jwt-hs"] || !req.cookies["jwt-payload"]) return callback(false);
 
   const hs = req.cookies["jwt-hs"].split(".");
-  const token = hs[0] + "." + req.cookies["jwt-payload"] + "." + hs[1];
 
-  if(token == null) return callback(false);
+  let token;
+  if (hs.length === 2) {
+    token = hs[0] + "." + req.cookies["jwt-payload"] + "." + hs[1];
+  }
+
+
+  if(token == null) {
+    res.clearCookie("jwt-hs");
+    res.clearCookie("jwt-payload");
+    return callback(false);
+  }
 
   jwt.verify(token, process.env.TOKEN_PRIVATE, (verifyError, user) => {
     if (verifyError) {
       console.error(verifyError);
       //return res.sendStatus(403);
+      res.clearCookie("jwt-hs");
+      res.clearCookie("jwt-payload");
       return callback(false);
     }
 

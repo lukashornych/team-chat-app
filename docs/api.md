@@ -50,6 +50,7 @@ also return full user object
 
 ➜ status 500 - Internal Server Error
 ➜ status 400 - Bad Request
+➜ status 403 - Forbidden
 ```
 ### ✔ POST /register
 post - register
@@ -197,23 +198,68 @@ put - edit channel/group
 ➜ status 403 - Forbidden
 ```
 
-### ✔ GET /getChannels/:id
+### ✔ GET /getChannels
 **➜ needs token authentication**
+
+Gets logged in user's ID.
+
 get - list of all user's channels
-- params:
-  - userId
 
 ***Return:***
 ```
 ➜ status 200 - OK
-  {
-    id: 1,
-    name: 'Kanál A',
-    description: 'Lorem ipsum',
-    type: 'PUBLIC_CHANNEL'
-  }
+  [
+    {
+      id: 1,
+      name: 'Kanál A',
+      description: 'Lorem ipsum',
+      type: 'PUBLIC_CHANNEL'
+    }
+  ]
 
 ➜ status 500 - Internal Server Error
+➜ status 403 - Forbidden
+```
+
+### ✔ GET /getChannelInvitations
+**➜ needs token authentication**
+
+Gets logged in user's ID.
+
+get - list of all user's channel invitations
+
+
+***Return:***
+```
+➜ status 200 - OK
+  [
+    {
+      id: 1,
+      channelName: 'Kanál F'
+    }
+  ]
+  
+➜ status 500 - Internal Server Error
+➜ status 403 - Forbidden
+```
+
+### ✔ POST /acceptChannelInvitation
+**➜ needs token authentication**
+post - accept channel invitation
+
+***Body:***
+```
+{
+  userId: 1,
+  channelId: 2
+}
+```
+
+***Return:***
+```
+➜ status 200 - OK
+➜ status 500 - Internal Server Error
+➜ status 400 - Bad Request
 ➜ status 403 - Forbidden
 ```
 
@@ -255,26 +301,7 @@ body
 
 
 
-### get - list of all user's channel invitations
-- params
-  - userId
-  
-return
-```
-{
-  id: 1,
-  channelName: 'Kanál F'
-}
-```
 
-### post - accept channel invitation
-body
-```
-{
-  userId: 1,
-  channelId: 2
-}
-```
 
 ### get - list all registration invitations
 return
