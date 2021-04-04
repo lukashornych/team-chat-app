@@ -5,7 +5,8 @@ export default {
   data () {
     return {
       username: '',
-      password: ''
+      password: '',
+      error: ''
     }
   },
 
@@ -19,11 +20,18 @@ export default {
   },
 
   methods: {
-    login () {
+    async login () {
+      this.error = ''
       this.$v.$touch()
 
       if (!this.$v.$invalid) {
-        // todo server documented
+        try {
+          await this.$http.post('/api/login', { username: this.username, password: this.password })
+          this.$store.commit('account/login', JSON.parse(atob(this.$cookies.get('jwt-payload'))))
+          await this.$router.push({ name: 'index' })
+        } catch (e) {
+          this.error = 'Nepodařilo se přihlásit. Zkuste to znovu.'
+        }
       }
     }
   },
@@ -38,6 +46,14 @@ export default {
     @submit.prevent="login"
   >
     <h2 class="mb-3">Přihlásit se</h2>
+
+    <v-alert
+      v-if="error"
+      color="red"
+      type="error"
+    >
+      {{ error }}
+    </v-alert>
 
     <VTextField
       v-model="username"

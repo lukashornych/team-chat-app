@@ -133,5 +133,5 @@ BEGIN
   ELSE
     SELECT 'user-exists' AS 'output' FROM DUAL;
   END IF;
-END
+END;
 $$ DELIMITER ;

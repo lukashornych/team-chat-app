@@ -13,16 +13,17 @@
   "dependencies": {
     "@nuxt/http": "latest",
     "bcrypt": "^5.0.1",
+    "cookie-parser": "^1.4.5",
     "dotenv": "^8.2.0",
     "express": "latest",
+    "jsonwebtoken": "^8.5.1",
     "mysql": "^2.18.1",
     "nuxt": "latest",
     "nuxt-socket-io": "^1.1.14",
     "socket.io": "^4.0.0",
     "socket.io-client": "^4.0.1",
-    "vuelidate": "^0.7.6",
-    "jsonwebtoken": "^8.5.1",
-    "cookie-parser": "^1.4.5"
+    "vue-cookies": "^1.7.4",
+    "vuelidate": "^0.7.6"
   },
   "devDependencies": {
     "@nuxt/types": "~2.15.0",

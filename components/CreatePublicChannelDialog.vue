@@ -8,7 +8,8 @@ export default {
     return {
       showCreatePublicChannelDialog: false,
       name: '',
-      description: ''
+      description: '',
+      error: ''
     }
   },
 
@@ -27,11 +28,35 @@ export default {
       this.$v.$reset()
     },
 
-    submit () {
+    async submit () {
+      this.error = ''
       this.$v.$touch()
 
       if (!this.$v.$invalid) {
-        console.log('sending requests') // todo: server documented
+        try {
+          await this.$http.$post(
+            '/api/newChannel',
+            {
+              type: 'PUBLIC_CHANNEL',
+              name: this.name,
+              description: this.description
+            },
+            {
+              hooks: {
+                afterResponse: [
+                  (req, opt, res) => {
+                    if (res.statusCode === 403) {
+                      this.$router.push({ name: 'auth-login' })
+                    }
+                  }
+                ]
+              }
+            }
+          )
+        } catch (e) {
+          this.error = 'Nastala neočekávaná chyba.'
+          return
+        }
 
         this.close()
       }
@@ -65,6 +90,13 @@ export default {
           Založit kanál
         </span>
       </VCardTitle>
+      <v-alert
+        v-if="error"
+        color="red"
+        type="error"
+      >
+        {{ error }}
+      </v-alert>
       <VCardText>
         <VContainer>
           <VRow>

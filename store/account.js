@@ -1,14 +1,14 @@
 // Vuex store for logged in account state
 
 export const state = () => ({
-  loggedInUser: {
-    id: 1,
-    username: 'lukas',
-    name: 'Lukáš',
-    created: '2021-04-02T13:14:00',
-    role: 'ADMINISTRATOR'
-  }
+  loggedInUser: null
 })
+
+export const mutations = {
+  login (state, user) {
+    state.loggedInUser = user
+  }
+}
 
 export const getters = {
   isLoggedIn (state) {
@@ -19,7 +19,7 @@ export const getters = {
     if (!getters.isLoggedIn) {
       return false
     }
-    return state.loggedInUser.role === 'ADMINISTRATOR'
+    return state.loggedInUser.role === 'ADMIN'
   },
 
   isModerator (state, getters) {

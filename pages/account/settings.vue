@@ -31,7 +31,7 @@ export default {
     }
   },
 
-  fetch () {
+  async fetch () {
     // todo server documented
     if (this.$store.getters) {
       this.registrationInvitations = [
@@ -49,35 +49,54 @@ export default {
         }
       ]
 
-      this.users = [
+      this.users = await this.$http.$get(
+        '/api/getAllAccounts',
         {
-          id: 1,
-          username: 'lukas',
-          name: 'Lukáš',
-          role: 'ADMINISTRATOR'
-        },
-        {
-          id: 2,
-          username: 'tomas',
-          name: 'Tomáš',
-          role: 'MODERATOR'
+          hooks: {
+            afterResponse: [
+              (req, opt, res) => {
+                if (res.statusCode === 403) {
+                  this.$router.push({ name: 'auth-login' })
+                }
+              }
+            ]
+          }
         }
-      ]
+      )
     }
   },
 
   methods: {
-    saveAccount () {
+    async saveAccount () {
       this.$v.account.$touch()
 
       if (!this.$v.account.$invalid) {
-        // todo server documented
+        await this.$http.put(
+          '/api/updateAccount',
+          {
+            userId: this.account.id,
+            name: this.account.name,
+            username: this.account.username,
+            newPassword: this.account.newPassword
+          },
+          {
+            hooks: {
+              afterResponse: [
+                (req, opt, res) => {
+                  if (res.statusCode === 403) {
+                    this.$router.push({ name: 'auth-login' })
+                  }
+                }
+              ]
+            }
+          }
+        )
       }
     },
 
-    generateRegistrationCode () {
+    async generateRegistrationCode () {
       // todo: server documented
-      this.$fetch()
+      await this.$fetch()
     },
 
     selectEditingUser (user) {
@@ -92,9 +111,27 @@ export default {
       this.editingUser = user
     },
 
-    saveEditingUserRole () {
-      // todo: server documented
-      this.$fetch()
+    async saveEditingUserRole () {
+      await this.$http.$put(
+        '/api/updateAccountRole',
+        {
+          userId: this.editingUser.id,
+          role: this.editingUser.role
+        },
+        {
+          hooks: {
+            afterResponse: [
+              (req, opt, res) => {
+                if (res.statusCode === 403) {
+                  this.$router.push({ name: 'auth-login' })
+                }
+              }
+            ]
+          }
+        }
+      )
+
+      await this.$fetch()
     }
   }
 }
@@ -197,7 +234,7 @@ export default {
 
         <VSelect
           v-model="editingUser.role"
-          :items="[{ text: 'ADMINISTRATOR', value: 'ADMINISTRATOR' }, { text: 'MODERATOR', value: 'MODERATOR' }, { text: 'USER', value: 'USER' }]"
+          :items="[{ text: 'ADMIN', value: 'ADMIN' }, { text: 'MODERATOR', value: 'MODERATOR' }, { text: 'USER', value: 'USER' }]"
           label="Role vybraného uživatele"
           outlined
           @input="saveEditingUserRole"

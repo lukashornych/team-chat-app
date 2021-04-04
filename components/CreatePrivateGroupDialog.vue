@@ -24,7 +24,8 @@ export default {
       showCreatePrivateGroupDialog: false,
       name: '',
       description: '',
-      users: []
+      users: [],
+      error: ''
     }
   },
 
@@ -44,16 +45,36 @@ export default {
       this.$v.$reset()
     },
 
-    submit () {
+    async submit () {
+      this.error = ''
       this.$v.$touch()
 
       if (!this.$v.$invalid) {
-        const request = {
-          name: this.name,
-          description: this.description,
-          userIds: this.users.map(u => u.id)
+        try {
+          await this.$http.$post(
+            '/api/newChannel',
+            {
+              type: 'PRIVATE_GROUP',
+              name: this.name,
+              description: this.description,
+              userIds: this.users.map(u => u.id)
+            },
+            {
+              hooks: {
+                afterResponse: [
+                  (req, opt, res) => {
+                    if (res.statusCode === 403) {
+                      this.$router.push({ name: 'auth-login' })
+                    }
+                  }
+                ]
+              }
+            }
+          )
+        } catch (e) {
+          this.error = 'Nastala neočekávaná chyba.'
+          return
         }
-        console.log('sending requests') // todo: server documented
 
         this.close()
       }
@@ -85,6 +106,13 @@ export default {
           Nová soukromá skupina
         </span>
       </VCardTitle>
+      <v-alert
+        v-if="error"
+        color="red"
+        type="error"
+      >
+        {{ error }}
+      </v-alert>
       <VCardText>
         <VContainer>
           <VRow>

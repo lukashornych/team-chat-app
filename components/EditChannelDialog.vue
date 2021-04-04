@@ -14,7 +14,8 @@ export default {
   data () {
     return {
       name: this.channel.name,
-      description: this.channel.description
+      description: this.channel.description,
+      error: ''
     }
   },
 
@@ -26,11 +27,31 @@ export default {
   },
 
   methods: {
-    submit () {
+    async submit () {
+      this.error = ''
       this.$v.$touch()
 
       if (!this.$v.$invalid) {
-        console.log('sending requests') // todo: server documented
+        try {
+          await this.$http.$put(
+            '/api/updateChannel',
+            { id: this.channel.id, name: this.channel.name, description: this.channel.description },
+            {
+              hooks: {
+                afterResponse: [
+                  (req, opt, res) => {
+                    if (res.statusCode === 403) {
+                      this.$router.push({ name: 'auth-login' })
+                    }
+                  }
+                ]
+              }
+            }
+          )
+        } catch (e) {
+          this.error = 'Nastala neočekávaná chyba.'
+          return
+        }
 
         this.$emit('input', false)
       }

@@ -13,29 +13,26 @@ export default {
     }
   },
 
-  fetch () {
-    // todo server documented
-    // todo fetch user documented
-    this.channels = [
+  async fetch () {
+    if (!this.$store.getters['account/isLoggedIn'] && this.$cookies.isKey('jwt-payload')) {
+      this.$store.commit('account/login', JSON.parse(atob(this.$cookies.get('jwt-payload'))))
+    }
+
+    this.channels = await this.$http.$get(
+      '/api/getChannels',
       {
-        id: 1,
-        name: 'Kanál A',
-        description: 'Lorem ipsum',
-        type: 'PUBLIC_CHANNEL'
-      },
-      {
-        id: 2,
-        name: 'Kanál B',
-        description: 'Lorem ipsum',
-        type: 'PUBLIC_CHANNEL'
-      },
-      {
-        id: 3,
-        name: 'Skupina C',
-        description: 'Lorem ipsum',
-        type: 'PRIVATE_GROUP'
+        hooks: {
+          afterResponse: [
+            (req, opt, res) => {
+              if (res.statusCode === 403) {
+                this.$router.push({ name: 'auth-login' })
+              }
+            }
+          ]
+        }
       }
-    ]
+    )
+
     this.channelInvitations = [
       {
         id: 1,

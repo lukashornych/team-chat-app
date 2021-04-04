@@ -7,7 +7,8 @@ export default {
       code: '',
       name: '',
       username: '',
-      password: ''
+      password: '',
+      error: ''
     }
   },
 
@@ -29,11 +30,38 @@ export default {
   },
 
   methods: {
-    register () {
+    async register () {
+      this.error = ''
       this.$v.$touch()
 
       if (!this.$v.$invalid) {
-        // todo server documented
+        // todo
+        await this.$http.$post(
+          '/api/register',
+          {
+            code: this.code,
+            name: this.name,
+            username: this.username,
+            password: this.password
+          },
+          {
+            hooks: {
+              afterResponse: [
+                async (req, opt, res) => {
+                  if (res.statusCode === 400) {
+                    const err = await res.text()
+                    if (err === 'unknown-code') {
+                      this.error = 'Neznámý kód'
+                    } else if (err === 'user-exists') {
+                      this.error = 'Uživatel s tím to uživatelským jménem již existuje.'
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        )
+        this.$router.push({ name: 'auth-login' })
       }
     }
   },
@@ -48,6 +76,14 @@ export default {
     @submit.prevent="register"
   >
     <h2 class="mb-3">Zaregistrovat se</h2>
+
+    <v-alert
+      v-if="error"
+      color="red"
+      type="error"
+    >
+      {{ error }}
+    </v-alert>
 
     <VTextField
       v-model="code"
