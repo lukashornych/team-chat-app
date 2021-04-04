@@ -14,10 +14,6 @@ export default {
   },
 
   async fetch () {
-    if (!this.$store.getters['account/isLoggedIn'] && this.$cookies.isKey('jwt-payload')) {
-      this.$store.commit('account/login', JSON.parse(atob(this.$cookies.get('jwt-payload'))))
-    }
-
     this.channels = await this.$http.$get(
       '/api/getChannels',
       {

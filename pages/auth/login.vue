@@ -2,6 +2,8 @@
 import { required } from 'vuelidate/lib/validators'
 
 export default {
+  layout: 'auth',
+
   data () {
     return {
       username: '',
@@ -34,9 +36,7 @@ export default {
         }
       }
     }
-  },
-
-  layout: 'auth'
+  }
 }
 </script>
 
@@ -45,7 +45,9 @@ export default {
     novalidate
     @submit.prevent="login"
   >
-    <h2 class="mb-3">Přihlásit se</h2>
+    <h2 class="mb-3">
+      Přihlásit se
+    </h2>
 
     <v-alert
       v-if="error"

@@ -143,7 +143,9 @@ export default {
       novalidate
       @submit.prevent="saveAccount"
     >
-      <h2 class="mb-3">Úprava profilu</h2>
+      <h2 class="mb-3">
+        Úprava profilu
+      </h2>
 
       <VTextField
         v-model="account.name"
@@ -176,7 +178,9 @@ export default {
       novalidate
       @submit.prevent="generateRegistrationCode"
     >
-      <h2 class="mb-3">Pozvánky do aplikace</h2>
+      <h2 class="mb-3">
+        Pozvánky do aplikace
+      </h2>
 
       <VList>
         <VListItem
@@ -206,7 +210,9 @@ export default {
       novalidate
       @submit.stop
     >
-      <h2 class="mb-3">Změna rolí uživatelů</h2>
+      <h2 class="mb-3">
+        Změna rolí uživatelů
+      </h2>
 
       <VList>
         <VListItem

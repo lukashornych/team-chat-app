@@ -1,6 +1,13 @@
 <script>
 export default {
-  middleware: 'not-authenticated'
+  middleware: 'not-authenticated',
+
+  mounted () {
+    if (this.$cookies.get('jwt-payload')) {
+      this.$store.commit('account/login', JSON.parse(atob(this.$cookies.get('jwt-payload'))))
+      this.$router.push({ name: 'index' })
+    }
+  }
 }
 </script>
 
