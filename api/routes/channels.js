@@ -32,10 +32,9 @@ router.post('/newChannel', (req, res) => {
 
     } else {  // Neexistuje seznam účtů
 
-      let accountsInChannel = "";   // Sestavení vložení účtů
+      let accountsInChannel = `(LAST_INSERT_ID(), '${req.user.id}')`;   // Sestavení vložení účtů
       userIds.forEach((account) => {
-        if (accountsInChannel.length !== 0) accountsInChannel += ",";
-        accountsInChannel += `(LAST_INSERT_ID(), '${account}')`;
+        accountsInChannel += `,(LAST_INSERT_ID(), '${account}')`;
       });
 
       pool.getConnection(function (connectionError, connection) {  // DB connection from pool
