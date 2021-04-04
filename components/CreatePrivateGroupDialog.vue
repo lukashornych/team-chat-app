@@ -4,18 +4,23 @@ import { required, minLength } from 'vuelidate/lib/validators'
 export default {
   name: 'CreatePrivateGroupDialog',
 
-  fetch () {
-    // todo server docuemnted
-    this.selectableUsers = [
+  async fetch () {
+    const users = await this.$http.$get(
+      '/api/getAllAccounts',
       {
-        text: 'Lukáš',
-        value: 1
-      },
-      {
-        text: 'Tomáš',
-        value: 2
+        hooks: {
+          afterResponse: [
+            (req, opt, res) => {
+              if (res.statusCode === 403) {
+                this.$router.push({ name: 'auth-login' })
+              }
+            }
+          ]
+        }
       }
-    ]
+    )
+    users.splice(this.users.findIndex(u => u.id === this.$store.state.account.loggedInUser.is), 1)
+    this.selectableUsers = users.map(u => ({ text: u.name, value: u.id }))
   },
 
   data () {
@@ -76,6 +81,7 @@ export default {
           return
         }
 
+        this.$emit('created')
         this.close()
       }
     }

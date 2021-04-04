@@ -58,6 +58,7 @@ export default {
           return
         }
 
+        this.$emit('created')
         this.close()
       }
     }

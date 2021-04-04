@@ -29,12 +29,20 @@ export default {
       }
     )
 
-    this.channelInvitations = [
+    this.channelInvitations = await this.$http.$get(
+      '/api/getChannelInvitations',
       {
-        id: 1,
-        channelName: 'Kanál F'
+        hooks: {
+          afterResponse: [
+            (req, opt, res) => {
+              if (res.statusCode === 403) {
+                this.$router.push({ name: 'auth-login' })
+              }
+            }
+          ]
+        }
       }
-    ]
+    )
   },
 
   computed: {
@@ -78,9 +86,27 @@ export default {
       this.$router.push({ name: 'account-settings' })
     },
 
-    acceptChannelInvitation (channelInvitation) {
-      // todo server documented
-      this.$fetch()
+    async acceptChannelInvitation (channelInvitation) {
+      await this.$http.$post(
+        '/api/acceptChannelInvitation',
+        {
+          userId: channelInvitation.userId,
+          channelId: channelInvitation.id
+        },
+        {
+          hooks: {
+            afterResponse: [
+              (req, opt, res) => {
+                if (res.statusCode === 403) {
+                  this.$router.push({ name: 'auth-login' })
+                }
+              }
+            ]
+          }
+        }
+      )
+
+      await this.$fetch()
     }
   }
 }
@@ -184,11 +210,11 @@ export default {
           v-if="$store.getters['account/isAdministrator'] || $store.getters['account/isModerator']"
           class="px-2 pt-2"
         >
-          <CreatePublicChannelDialog />
+          <CreatePublicChannelDialog @created="$fetch" />
         </div>
 
         <div class="pa-2">
-          <CreatePrivateGroupDialog />
+          <CreatePrivateGroupDialog @created="$fetch" />
         </div>
 
         <div class="px-2 pb-2">
@@ -230,9 +256,9 @@ export default {
       </VBtn>
 
       <EditChannelDialog
-        v-if="showEditChannelDialog"
+        v-if="($store.getters['account/isAdministrator'] || $store.getters['account/isModerator']) && showEditChannelDialog"
         :channel="channels[selectedChannelIndex]"
-        @input="showEditChannelDialog = false"
+        @input="showEditChannelDialog = false; $fetch()"
       />
 
       <VBtn
@@ -246,7 +272,7 @@ export default {
       </VBtn>
 
       <CreateChannelInvitationDialog
-        v-if="showChannelInvitationDialog"
+        v-if="($store.getters['account/isAdministrator'] || $store.getters['account/isModerator']) && showChannelInvitationDialog"
         :channel="channels[selectedChannelIndex]"
         @input="showChannelInvitationDialog = false"
       />

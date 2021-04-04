@@ -63,6 +63,7 @@ export default {
           }
         }
       )
+      this.users.splice(this.users.findIndex(u => u.id === this.$store.state.account.loggedInUser.is), 1)
     }
   },
 
