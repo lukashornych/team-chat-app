@@ -1,6 +1,8 @@
 require('dotenv').config({ path: __dirname + '/../.env' });
 
 const express = require('express');
+const cookieParser = require('cookie-parser');
+const jwt = require('jsonwebtoken');
 const mysql = require('mysql');
 
 // Database connection pool
@@ -17,18 +19,19 @@ module.exports.connectionDB = pool;
 // Create express instance
 const app = express();
 
+app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 
 // Require API routes
-const users = require('./routes/users');
-const test = require('./routes/test');
+//const users = require('./routes/users');
+//const test = require('./routes/test');
 const accounts = require('./routes/accounts');
 const channels = require('./routes/channels');
 
 // Import API Routes
-app.use(users);
-app.use(test);
+//app.use(users);
+//app.use(test);
 app.use(accounts);
 app.use(channels);
 
@@ -43,3 +46,5 @@ if (require.main === module) {
     console.log(`API server listening on port ${port}`);
   });
 }
+
+

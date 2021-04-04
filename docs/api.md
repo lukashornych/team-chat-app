@@ -4,7 +4,19 @@
 
 ## REST API
 
-<hr/>
+Needs <code>.env</code> in root folder, example below.
+```
+PORT=3000
+
+DB_HOST=localhost
+DB_PORT=33061
+DB_USER=root
+DB_PASSWORD=root
+DB_DATABASE=team-chat-app
+
+TOKEN_PRIVATE=FwF4DIJcOs5dqRFfIbwPryyIi3GjiaeBJydlszOyywoHeEaTKE2MbtxJztu20TIV    #maybe 64bit
+TOKEN_REFRESH=LpIerAclzm5cpU8SHx2M1ERp100Tlm1evYLVY5pkALtlfDkMA8niyPhI0xMEfkAD    #maybe 64bit, in this moment unused
+```
 
 <i>Soubor <b>'accounts.js'</b></i>
 
@@ -60,6 +72,8 @@ post - register
 ```
 
 ### ✔ PUT /updateAccount
+**➜ needs token authentication**
+
 put - update user account
 
 ***Body:***
@@ -76,9 +90,12 @@ put - update user account
 ➜ status 200 - OK
 ➜ status 500 - Internal Server Error
 ➜ status 400 - Bad Request
+➜ status 403 - Forbidden
 ```
 
 ### ✔ PUT /updateAccountRole
+**➜ needs token authentication**
+
 put - update user role
 
 ***Body:***
@@ -98,6 +115,8 @@ maybe merge with user update endpoint???
 ```
 
 ### ✔ GET /getAllAccounts
+**➜ needs token authentication**
+
 get - list of all users
 
 ***Return:***
@@ -113,6 +132,7 @@ get - list of all users
 ]
 
 ➜ status 500 - Internal Server Error
+➜ status 403 - Forbidden
 ```
 { 
 text: 'Lukáš',
@@ -120,13 +140,23 @@ value: 1
 }
 or full user objects
 
+
+
+
+
 <hr/>
+
+
+
+
 
 <i>Soubor <b>'channels.js'</b></i>
 
 
 
 ### ✔ POST /newChannel
+**➜ needs token authentication**
+
 post - new channel/group
 
 body
@@ -143,6 +173,48 @@ return
 ➜ status 200 - OK
 ➜ status 500 - Internal Server Error
 ➜ status 400 - Bad Request
+➜ status 403 - Forbidden
+```
+
+### ✔ PUT /updateChannel
+**➜ needs token authentication**
+
+put - edit channel/group
+
+***Body:*** - ZMĚNA! (přidáno ID channelu)
+```
+{
+  id: '12'
+  name: 'channel',
+  description: 'desc'
+}
+```
+***Return:***
+```
+➜ status 200 - OK
+➜ status 500 - Internal Server Error
+➜ status 400 - Bad Request
+➜ status 403 - Forbidden
+```
+
+### ✔ GET /getChannels/:id
+**➜ needs token authentication**
+get - list of all user's channels
+- params:
+  - userId
+
+***Return:***
+```
+➜ status 200 - OK
+  {
+    id: 1,
+    name: 'Kanál A',
+    description: 'Lorem ipsum',
+    type: 'PUBLIC_CHANNEL'
+  }
+
+➜ status 500 - Internal Server Error
+➜ status 403 - Forbidden
 ```
 
 
@@ -169,7 +241,7 @@ return
 ```
 or full user objects
 
-### post - submit new channel invitations
+###??? post - submit new channel invitations ???
 body
 ```
 {
@@ -179,28 +251,9 @@ body
 ```
 
 
-### put - edit channel/group
-body
-```
-{
-  name: 'channel',
-  description: 'desc'
-}
-```
 
-### get - list of all user's channels
-- params: 
-  - userId
-  
-return
-```
-{
-  id: 1,
-  name: 'Kanál A',
-  description: 'Lorem ipsum',
-  type: 'PUBLIC_CHANNEL'
-}
-```
+
+
 
 ### get - list of all user's channel invitations
 - params

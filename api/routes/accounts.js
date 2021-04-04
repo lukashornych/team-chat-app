@@ -1,7 +1,9 @@
 const { Router } = require('express');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const pool = require('../index').connectionDB;
+
+const api = require('../index');
+const pool = api.connectionDB;
 
 const router = Router();
 
@@ -76,8 +78,14 @@ router.post('/login', (req, res) => {
             role: queryResults[0].role
           }
 
-          const token = jwt.sign(body, process.env.TOKEN_PRIVATE ); //, {expiresIn: "1h"}
-          res.status(200).send({token: token});
+          const token = jwt.sign(body, process.env.TOKEN_PRIVATE, {expiresIn: "24h"} ); //, {expiresIn: "1h"}
+
+          const cutToken = token.split(".");
+
+          res.cookie("jwt-hs", cutToken[0]+"."+cutToken[2], { maxAge: 900000, httpOnly: true });
+          res.cookie("jwt-payload", cutToken[1], { maxAge: 900000, httpOnly: false });
+
+          res.sendStatus(200);
 
         } else {
           res.sendStatus(400); // ??????????
@@ -93,22 +101,52 @@ router.post('/login', (req, res) => {
 
 /**
  ** UPDATE ACCOUNT
+ ** authenticated by token
  **/
 router.put('/updateAccount', (req, res) => {
-  if (!req.body.userId || !req.body.name || !req.body.username || !req.body.newPassword) return res.sendStatus(400);
+  authenticateToken(req, res, (authenticated) => {
+    if (!authenticated) return res.sendStatus(403);
 
-  const userId = req.body.userId;
-  const name = req.body.name;
-  const username = req.body.username;
-  const newPassword = req.body.newPassword;
+    if (!req.body.userId || !req.body.name || !req.body.username || !req.body.newPassword) return res.sendStatus(400);
 
-  bcrypt.hash(newPassword, 10, (hashError, hash) => {
-    if(hashError) {
-      console.log(hashError);
-      return res.sendStatus(500);
-    }
+    const userId = req.body.userId;
+    const name = req.body.name;
+    const username = req.body.username;
+    const newPassword = req.body.newPassword;
 
-    pool.query(`UPDATE account SET name='${name}', username='${username}', passwordHash='${hash}' WHERE id='${userId}';`, function (queryError, queryResults, queryFields) {
+    bcrypt.hash(newPassword, 10, (hashError, hash) => {
+      if (hashError) {
+        console.error(hashError);
+        return res.sendStatus(500);
+      }
+
+      pool.query(`UPDATE account SET name='${name}', username='${username}', passwordHash='${hash}' WHERE id='${userId}';`, function (queryError, queryResults, queryFields) {
+        if (queryError) {
+          console.error(queryError);
+          res.sendStatus(500);
+        }
+
+        res.sendStatus(200);
+      });
+    });
+  });
+});
+
+
+/**
+ ** UPDATE ACCOUNT ROLE
+ ** authenticated by token
+ **/
+router.put('/updateAccountRole', (req, res) => {
+  authenticateToken(req, res, (authenticated) => {
+    if (!authenticated) return res.sendStatus(403);
+
+    if (!req.body.userId || !req.body.role) return res.sendStatus(400);
+
+    const userId = req.body.userId;
+    const role = req.body.role;
+
+    pool.query(`UPDATE account SET role='${role}' WHERE id='${userId}';`, function (queryError, queryResults, queryFields) {
       if (queryError) {
         console.error(queryError);
         res.sendStatus(500);
@@ -119,37 +157,22 @@ router.put('/updateAccount', (req, res) => {
   });
 });
 
-
-/**
- ** UPDATE ACCOUNT ROLE
- **/
-router.put('/updateAccountRole', (req, res) => {
-  if (!req.body.userId || !req.body.role) return res.sendStatus(400);
-
-  const userId = req.body.userId;
-  const role = req.body.role;
-
-  pool.query(`UPDATE account SET role='${role}' WHERE id='${userId}';`, function (queryError, queryResults, queryFields) {
-    if (queryError) {
-      console.error(queryError);
-      res.sendStatus(500);
-    }
-
-    res.sendStatus(200);
-  });
-});
-
 /**
  ** GET ALL USERS
+ ** authenticated by token
  **/
 router.get('/getAllAccounts', (req, res) => {
-  pool.query(`SELECT id, name, username, role FROM account;`, function (queryError, queryResults, queryFields) {
-    if (queryError) {
-      console.error(queryError);
-      res.sendStatus(500);
-    }
+  authenticateToken(req, res, (authenticated) => {
+    if (!authenticated) return res.sendStatus(403);
 
-    res.status(200).json(queryResults);
+    pool.query(`SELECT id, name, username, role FROM account;`, function (queryError, queryResults, queryFields) {
+      if (queryError) {
+        console.error(queryError);
+        res.sendStatus(500);
+      }
+
+      res.status(200).json(queryResults);
+    });
   });
 });
 
@@ -157,28 +180,48 @@ router.get('/getAllAccounts', (req, res) => {
 module.exports = router;
 
 
-function authenticateToken(req, res, callback) {
-  const authHeader = req.headers.authorization;
-  const token = authHeader && authHeader.split(' ')[1];
+/**
+ ** Token authentication function
+ ** @param req
+ ** @param res
+ ** @param callback
+ **/
+const authenticateToken = function (req, res, callback) {
+  if(!req.cookies["jwt-hs"] || !req.cookies["jwt-payload"]) return callback(false);
 
-  if(token === null) return res.sendStatus(401);
+  const hs = req.cookies["jwt-hs"].split(".");
+  const token = hs[0] + "." + req.cookies["jwt-payload"] + "." + hs[1];
+
+  if(token == null) return callback(false);
 
   jwt.verify(token, process.env.TOKEN_PRIVATE, (verifyError, user) => {
     if (verifyError) {
       console.error(verifyError);
-      return res.sendStatus(403);
+      //return res.sendStatus(403);
+      return callback(false);
     }
 
     req.user = user;
-    callback();
+    callback(true);
   });
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 /**
  ** DEBUG SECTION
  **/
-
 
 // DEBUG Verify Token
 router.get('/verifytoken/:token', (req, res) => {
@@ -195,10 +238,16 @@ router.get('/verifytoken/:token', (req, res) => {
 
 // DEBUG Test DB Connection
 router.get('/detest', (req, res) => {
-  pool.query('SELECT 1 + 1 AS solution', function (error, results, fields) {
-    if (error) throw error;
-    console.log('The solution is: ', results[0].solution);
-    res.sendStatus(200);
+  authenticateToken(req, res, (authenticated) => {
+    if(authenticated) {
+      pool.query('SELECT 1 + 1 AS solution', function (error, results, fields) {
+        if (error) throw error;
+        console.log('The solution is: ', results[0].solution);
+        res.sendStatus(200);
+      });
+    } else {
+      res.sendStatus(403);
+    }
   });
 });
 
@@ -213,7 +262,7 @@ router.post('/createAdmin', (req, res) => {
 
   bcrypt.hash(req.body.password, 10, (hashError, hash) => {
     if(hashError) {
-      console.log(hashError);
+      console.error(hashError);
       return res.sendStatus(500);
     }
 
@@ -226,3 +275,7 @@ router.post('/createAdmin', (req, res) => {
     });
   });
 });
+
+
+
+
