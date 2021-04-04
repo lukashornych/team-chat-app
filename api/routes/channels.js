@@ -119,11 +119,11 @@ router.put('/updateChannel', (req, res) => {
  ** GET ACCOUNT'S CHANNELS
  ** authenticated by token
  **/
-router.get('/getChannels/:id', (req, res) => {
+router.get('/getChannels', (req, res) => {
   authenticateToken(req, res, (authenticated) => {
     if (!authenticated) return res.sendStatus(403);
 
-    const id = req.params.id;
+    const id = req.user.id;
 
     pool.query(`SELECT ch.id, ch.name, ch.description, ch.type FROM channel ch JOIN accountInChannel aich  ON ch.id=aich.channelId WHERE aich.accountId='${id}' UNION
     SELECT id, name, description, type FROM channel WHERE type='PUBLIC_CHANNEL';`, function (queryError, queryResults, queryFields) {
@@ -139,6 +139,73 @@ router.get('/getChannels/:id', (req, res) => {
 });
 
 
+/**
+ ** GET ACCOUNT'S CHANNEL INVITATIONS
+ ** authenticated by token
+ **/
+router.get('/getChannelInvitations', (req, res) => {
+  authenticateToken(req, res, (authenticated) => {
+    if (!authenticated) return res.sendStatus(403);
+
+    const id = req.user.id;
+
+    pool.query(`SELECT ch.id, ch.name  FROM channel ch JOIN channelInvitation chi ON ch.id=chi.channelId WHERE chi.accountId='${id}' AND accepted='0';`, function (queryError, queryResults, queryFields) {
+      if (queryError) {
+        console.error(queryError);
+        res.sendStatus(500);
+      }
+
+      res.status(200).json(queryResults);
+      console.log(queryResults);
+    });
+  });
+/*
+  DELIMITER $$
+  CREATE PROCEDURE `registerAccount`(IN in_channelId INT, IN in_accountId INT)
+  BEGIN
+  DECLARE count_invitations INT;
+  DECLARE decl_invId INT;
+
+  SELECT COUNT(*) INTO count_invitations FROM channelInvitation WHERE channelId=in_channelId AND accountId=in_accountId AND accepted=0;
+
+  IF count_invitations != 0 THEN
+  SELECT MIN(id) INTO decl_invId FROM channelInvitation WHERE channelId=in_channelId AND accountId=in_accountId AND accepted=0;
+  UPDATE channelInvitation SET accepted=1 WHERE id=decl_invId;
+  INSERT INTO accountInChannel() VALUE ();
+  END IF;
+  END
+  $$ DELIMITER;
+  */
+});
+
+
+/**
+ ** GET ACCOUNT'S CHANNEL INVITATIONS
+ ** authenticated by token
+ **/
+router.post('/acceptChannelInvitation', (req, res) => {
+  authenticateToken(req, res, (authenticated) => {
+    if (!authenticated) return res.sendStatus(403);
+
+    if (!req.body.userId || !req.body.channelId) return res.sendStatus(400);
+
+    const userId = req.body.userId;
+    const channelId = req.body.channelId;
+
+    pool.query(`SELECT ch.id, ch.name  FROM channel ch JOIN channelInvitation chi ON ch.id=chi.channelId WHERE chi.accountId='${id}' AND accepted='0';`, function (queryError, queryResults, queryFields) {
+      if (queryError) {
+        console.error(queryError);
+        res.sendStatus(500);
+      }
+
+      res.status(200).json(queryResults);
+      console.log(queryResults);
+    });
+  });
+});
+
+
+
 module.exports = router;
 
 
@@ -152,14 +219,25 @@ const authenticateToken = function (req, res, callback) {
   if(!req.cookies["jwt-hs"] || !req.cookies["jwt-payload"]) return callback(false);
 
   const hs = req.cookies["jwt-hs"].split(".");
-  const token = hs[0] + "." + req.cookies["jwt-payload"] + "." + hs[1];
 
-  if(token == null) return callback(false);
+  let token;
+  if (hs.length === 2) {
+    token = hs[0] + "." + req.cookies["jwt-payload"] + "." + hs[1];
+  }
+
+
+  if(token == null) {
+    res.clearCookie("jwt-hs");
+    res.clearCookie("jwt-payload");
+    return callback(false);
+  }
 
   jwt.verify(token, process.env.TOKEN_PRIVATE, (verifyError, user) => {
     if (verifyError) {
       console.error(verifyError);
       //return res.sendStatus(403);
+      res.clearCookie("jwt-hs");
+      res.clearCookie("jwt-payload");
       return callback(false);
     }
 
