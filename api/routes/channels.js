@@ -13,69 +13,58 @@ router.post('/newChannel', (req, res) => {
     if (!authenticated) return res.sendStatus(403);
 
     if (!req.body.type || !req.body.name || !req.body.description) return res.sendStatus(400);
-    if (req.body.type !== ("PRIVATE_GROUP" || "PUBLIC_CHANNEL")) return res.sendStatus(400);
+    if (!(req.body.type === ("PRIVATE_GROUP") || req.body.type === "PUBLIC_CHANNEL")) return res.sendStatus(400); // takto funguje, (req.body.type !== ("PRIVATE_GROUP") || req.body.type !== "PUBLIC_CHANNEL") vyhodí error (400)!
 
     const type = req.body.type;
     const name = req.body.name;
     const description = req.body.description;
     const userIds = req.body.userIds;
 
-    if (!userIds || userIds.length === 0) {   // Existuje seznam účtů
-      pool.query(`INSERT INTO channel(name, description, type) VALUE ('${name}', '${description}', '${type}');`, function (queryError, queryResults, queryFields) {
-        if (queryError) {
-          console.error(queryError);
-          res.sendStatus(500);
-        }
-
-        res.sendStatus(200);
-      });
-
-    } else {  // Neexistuje seznam účtů
-
-      let accountsInChannel = `(LAST_INSERT_ID(), '${req.user.id}')`;   // Sestavení vložení účtů
+    let accountsInChannel = `(LAST_INSERT_ID(), '${req.user.id}')`;   // Sestavení vložení účtů
+    if (userIds) {
       userIds.forEach((account) => {
         accountsInChannel += `,(LAST_INSERT_ID(), '${account}')`;
       });
+    }
 
-      pool.getConnection(function (connectionError, connection) {  // DB connection from pool
-        if (connectionError) {
-          console.log(connectionError);
+    pool.getConnection(function (connectionError, connection) {  // DB connection from pool
+      if (connectionError) {
+        console.log(connectionError);
+        res.sendStatus(500);
+      }
+
+      connection.beginTransaction(function (transactionError) { // BEGIN TRANSACTION
+        if (transactionError) {
+          console.log(transactionError);
           res.sendStatus(500);
         }
 
-        connection.beginTransaction(function (transactionError) { // BEGIN TRANSACTION
-          if (transactionError) {
-            console.log(transactionError);
+        connection.query(`INSERT INTO channel(name, description, type) VALUE ('${name}', '${description}', '${type}');`, function (queryError, queryResults, queryFields) {
+          if (queryError) {
+            console.error(queryError);
             res.sendStatus(500);
           }
+        });
 
-          connection.query(`INSERT INTO channel(name, description, type) VALUE ('${name}', '${description}', '${type}');`, function (queryError, queryResults, queryFields) {
-            if (queryError) {
-              console.error(queryError);
+        connection.query(`INSERT INTO accountInChannel(channelId, accountId) VALUES ${accountsInChannel};`, function (queryError, queryResults, queryFields) {
+          if (queryError) {
+            console.error(queryError);
+            res.sendStatus(500);
+          }
+        });
+
+        connection.commit(function (commitError) {  // COMMIT TRANSACTION
+          if (commitError) {
+            return connection.rollback(function () {
+              console.log(commitError);
               res.sendStatus(500);
-            }
-          });
+            });
+          }
 
-          connection.query(`INSERT INTO accountInChannel(channelId, accountId) VALUES ${accountsInChannel};`, function (queryError, queryResults, queryFields) {
-            if (queryError) {
-              console.error(queryError);
-              res.sendStatus(500);
-            }
-          });
-
-          connection.commit(function (commitError) {  // COMMIT TRANSACTION
-            if (commitError) {
-              return connection.rollback(function () {
-                console.log(commitError);
-                res.sendStatus(500);
-              });
-            }
-
-            res.sendStatus(200);
-          });
+          res.sendStatus(200);
         });
       });
-    }
+    });
   });
 });
 
@@ -95,13 +84,15 @@ router.put('/updateChannel', (req, res) => {
   authenticateToken(req, res, (authenticated) => {
     if (!authenticated) return res.sendStatus(403);
 
-    if (!req.body.id || !req.body.name || !req.body.description) return res.sendStatus(400);
+    if (!req.body.id || (!req.body.name && !req.body.description)) return res.sendStatus(400);
 
     const id = req.body.id;
-    const name = req.body.name;
-    const description = req.body.description;
 
-    pool.query(`UPDATE channel SET name='${name}', description='${description}' WHERE id='${id}' ;`, function (queryError, queryResults, queryFields) {
+    let setter = [];  // SET statement creation
+    if (req.body.name) setter.push(`name='${req.body.name}'`);
+    if (req.body.description) setter.push(`description='${req.body.description}'`);
+
+    pool.query(`UPDATE channel SET ${setter.toString()} WHERE id='${id}' ;`, function (queryError, queryResults, queryFields) {
       if (queryError) {
         console.error(queryError);
         res.sendStatus(500);

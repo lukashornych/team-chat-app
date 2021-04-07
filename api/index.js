@@ -28,12 +28,14 @@ app.use(express.urlencoded({extended: true}));
 //const test = require('./routes/test');
 const accounts = require('./routes/accounts');
 const channels = require('./routes/channels');
+const registrationInvitations = require('./routes/registrationInvitations');
 
 // Import API Routes
 //app.use(users);
 //app.use(test);
 app.use(accounts);
 app.use(channels);
+app.use(registrationInvitations);
 
 // Export express app
 module.exports = app;

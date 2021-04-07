@@ -102,32 +102,31 @@ router.post('/login', (req, res) => {
 /**
  ** UPDATE ACCOUNT
  ** authenticated by token
- **/
+ **/ //TODO udělat parametry nepovinné, např newPassword/username/name nepovinné
 router.put('/updateAccount', (req, res) => {
   authenticateToken(req, res, (authenticated) => {
     if (!authenticated) return res.sendStatus(403);
 
-    if (!req.body.userId || !req.body.name || !req.body.username || !req.body.newPassword) return res.sendStatus(400);
+    if (!req.body.userId || (!req.body.name && !req.body.username && !req.body.newPassword)) return res.sendStatus(400);
 
     const userId = req.body.userId;
-    const name = req.body.name;
-    const username = req.body.username;
-    const newPassword = req.body.newPassword;
 
-    bcrypt.hash(newPassword, 10, (hashError, hash) => {
-      if (hashError) {
-        console.error(hashError);
-        return res.sendStatus(500);
+    let setter = [];     // SET statement creation
+    if (req.body.role) setter.push(`role='${req.body.role}'`);
+    if (req.body.name) setter.push(`name='${req.body.name}'`);
+    if (req.body.username) setter.push(`username='${req.body.username}'`);
+    if (req.body.newPassword) {
+      const newPasswordHash = bcrypt.hashSync(req.body.newPassword, 10);
+      setter.push(`passwordHash='${newPasswordHash}'`);
+    }
+
+    pool.query(`UPDATE account SET ${setter.toString()} WHERE id='${userId}';`, function (queryError, queryResults, queryFields) {
+      if (queryError) {
+        console.error(queryError);
+        res.sendStatus(500);
       }
 
-      pool.query(`UPDATE account SET name='${name}', username='${username}', passwordHash='${hash}' WHERE id='${userId}';`, function (queryError, queryResults, queryFields) {
-        if (queryError) {
-          console.error(queryError);
-          res.sendStatus(500);
-        }
-
-        res.sendStatus(200);
-      });
+      res.sendStatus(200);
     });
   });
 });

@@ -73,7 +73,7 @@ post - register
 ```
 
 ### ✔ PUT /updateAccount
-**➜ needs token authentication**
+**➜ needs token authentication**<br/>
 
 put - update user account
 
@@ -81,9 +81,10 @@ put - update user account
 ```
 {
   userId: 1,
-  name: 'Name,
-  username: 'username',
-  newPassword: ''
+  name: 'Name,            // OPTIONAL, at least 1 of folowing
+  username: 'username',   // OPTIONAL, at least 1 of folowing
+  newPassword: ':)',      // OPTIONAL, at least 1 of folowing
+  role: 'MODERATOR'       // OPTIONAL, at least 1 of folowing
 }
 ```
 ***Return:***
@@ -94,8 +95,8 @@ put - update user account
 ➜ status 403 - Forbidden
 ```
 
-### ✔ PUT /updateAccountRole
-**➜ needs token authentication**
+### ✔ PUT /updateAccountRole  -> MAYBE WILL GO AWAY
+**➜ needs token authentication**<br/>
 
 put - update user role
 
@@ -116,7 +117,7 @@ maybe merge with user update endpoint???
 ```
 
 ### ✔ GET /getAllAccounts
-**➜ needs token authentication**
+**➜ needs token authentication**<br/>
 
 get - list of all users
 
@@ -155,8 +156,8 @@ or full user objects
 
 
 
-### ✔ POST /newChannel
-**➜ needs token authentication**
+### ✔ POST /newChannel  -> WILL BE CHANGED TO /createChannel
+**➜ needs token authentication**<br/>
 
 post - new channel/group
 
@@ -178,7 +179,7 @@ return
 ```
 
 ### ✔ PUT /updateChannel
-**➜ needs token authentication**
+**➜ needs token authentication**<br/>
 
 put - edit channel/group
 
@@ -186,8 +187,8 @@ put - edit channel/group
 ```
 {
   id: '12'
-  name: 'channel',
-  description: 'desc'
+  name: 'channel',        // OPTIONAL, at least 1 of folowing
+  description: 'desc'     // OPTIONAL, at least 1 of folowing
 }
 ```
 ***Return:***
@@ -199,9 +200,8 @@ put - edit channel/group
 ```
 
 ### ✔ GET /getChannels
-**➜ needs token authentication**
-
-Gets logged in user's ID.
+**➜ needs token authentication**<br/>
+**➜ Gets logged in user's ID.**<br/>
 
 get - list of all user's channels
 
@@ -222,9 +222,9 @@ get - list of all user's channels
 ```
 
 ### ✔ GET /getChannelInvitations
-**➜ needs token authentication**
+**➜ needs token authentication**<br/>
+**➜ Gets logged in user's ID.**<br/>
 
-Gets logged in user's ID.
 
 get - list of all user's channel invitations
 
@@ -244,7 +244,8 @@ get - list of all user's channel invitations
 ```
 
 ### ✔ POST /acceptChannelInvitation
-**➜ needs token authentication**
+**➜ needs token authentication**<br/>
+
 post - accept channel invitation
 
 ***Body:***
@@ -264,7 +265,73 @@ post - accept channel invitation
 ```
 
 
+
+
+
+
+
+
 <hr/>
+
+
+
+
+
+<i>Soubor <b>'registrationInvitations.js'</b></i>
+
+
+### ✔ GET /getAllRegistrationInvitations
+**➜ needs token authentication**<br/>
+
+get - list all registration invitations
+
+***Return:***
+```
+➜ status 200 - OK
+  [
+    {
+      id: "1",
+      code: "aa",
+      accepted: "false"
+    }
+  ]
+
+➜ status 500 - Internal Server Error
+➜ status 403 - Forbidden
+```
+
+
+### ✔ POST /generateRegistrationInvitation
+**➜ needs token authentication**<br/>
+
+post - generate new registration invitation
+
+***Body: (can be empty)*** 
+```
+  {
+    amount: "3"   // OPTIONAL
+  }
+```
+
+***Return:***
+```
+➜ status 200 - OK
+➜ status 500 - Internal Server Error
+➜ status 403 - Forbidden
+```
+
+
+
+
+
+
+<hr/>
+
+
+
+
+
+
 
 <br/>
 <br/>
@@ -303,19 +370,7 @@ body
 
 
 
-### get - list all registration invitations
-return
-```
-{
-  code: 'aa',
-  accepted: false
-}
-```
 
-
-
-### post - generate new registration invitation
-body empty
 
 
 
