@@ -81,8 +81,8 @@ router.post('/login', (req, res) => {
 
           const cutToken = token.split(".");
 
-          res.cookie("jwt-hs", cutToken[0]+"."+cutToken[2], { maxAge: 900000, httpOnly: true });
-          res.cookie("jwt-payload", cutToken[1], { maxAge: 900000, httpOnly: false });
+          res.cookie("jwt-hs", cutToken[0]+"."+cutToken[2], { maxAge: 86400000, httpOnly: true, sameSite: "lax", secure: true });  // 1 den
+          res.cookie("jwt-payload", cutToken[1], { maxAge: 86400000, httpOnly: false, sameSite: "lax", secure: true });
 
           res.sendStatus(200);
 
@@ -106,9 +106,11 @@ router.put('/updateAccount', (req, res) => {
   authenticateToken(req, res, (authenticated) => {
     if (!authenticated) return res.sendStatus(401);
 
-    if (!req.body.userId || (!req.body.name && !req.body.username && !req.body.newPassword)) return res.sendStatus(400);
+    if (!req.body.name && !req.body.username && !req.body.newPassword) return res.sendStatus(400);
 
-    const userId = req.body.userId;
+    let userId = req.body.userId;
+    if (!userId) userId = req.user.id;
+    //TODO Uživatel a moderátor sám sebe, Administrátor ostatní
 
     let setter = [];     // SET statement creation
     if (req.body.role) setter.push(`role='${req.body.role}'`);

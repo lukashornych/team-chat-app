@@ -45,8 +45,6 @@ app.use(messages);
 // Export express app
 module.exports = app;
 
-// require('./messages'); // todo tomdo: smazat???
-
 // Start standalone server if directly running
 if (require.main === module) {
   const port = process.env.PORT || 3001;
