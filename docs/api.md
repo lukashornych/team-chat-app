@@ -74,6 +74,8 @@ post - register
 
 ### ✔ PUT /updateAccount
 **➜ needs token authentication**<br/>
+**➜ role: ALL**<br/>
+Pouze admin může změnit role.
 
 put - update user account
 
@@ -156,8 +158,11 @@ or full user objects
 
 
 
-### ✔ POST /newChannel  -> WILL BE CHANGED TO /createChannel
+### ✔ POST /createChannel  -> WILL BE CHANGED TO /createChannel
 **➜ needs token authentication**<br/>
+**➜ role: ALL**<br/>
+Moderator, Admin - PUBLIC_CHANNEL<br/>
+ALL - PRIVATE_CHANNEL<br/>
 
 post - new channel/group
 
@@ -180,6 +185,9 @@ return
 
 ### ✔ PUT /updateChannel
 **➜ needs token authentication**<br/>
+**➜ role: ALL**<br/>
+Moderator, Admin - PUBLIC_CHANNEL<br/>
+ALL - PRIVATE_CHANNEL<br/>
 
 put - edit channel/group
 
@@ -264,7 +272,61 @@ post - accept channel invitation
 ➜ status 403 - Forbidden
 ```
 
+### ✔ POST /createChannelInvitation
+**➜ needs token authentication**<br/>
+**➜ role: ALL**<br/>
+Moderator, Admin - PUBLIC_CHANNEL<br/>
+ALL - PRIVATE_CHANNEL<br/>
+...OVĚŘIT, ZDA JE V CHANNELU<br/>
 
+??? post - submit new channel invitations ???
+
+***Body:***
+```
+{
+  channelId: 1,
+  userIds: []
+}
+```
+
+***Return:***
+```
+➜ status 200 - OK
+➜ status 500 - Internal Server Error
+➜ status 400 - Bad Request
+➜ status 403 - Forbidden
+```
+
+
+### ✔ GET /getChannelsInvitableAccounts
+get - list of users invitable to channel
+**➜ role: ALL**<br/>
+Moderator, Admin - PUBLIC_CHANNEL<br/>
+ALL - PRIVATE_CHANNEL<br/>
+
+***Body:***
+```
+{
+  channelId: 1
+}
+```
+
+***Return:***
+```
+➜ status 200 - OK
+  [
+    {
+      id: 1,
+      name: 'Lukáš',
+      username: 'Lukas'
+    }
+  ]
+  
+➜ status 500 - Internal Server Error
+➜ status 400 - Bad Request
+➜ status 403 - Forbidden
+```
+or full user objects
 
 
 
@@ -282,6 +344,7 @@ post - accept channel invitation
 
 ### ✔ GET /getAllRegistrationInvitations
 **➜ needs token authentication**<br/>
+**➜ role: ADMIN**<br/>
 
 get - list all registration invitations
 
@@ -303,6 +366,7 @@ get - list all registration invitations
 
 ### ✔ POST /generateRegistrationInvitation
 **➜ needs token authentication**<br/>
+**➜ role: ADMIN**<br/>
 
 post - generate new registration invitation
 
@@ -330,38 +394,65 @@ post - generate new registration invitation
 
 
 
+<i>Soubor <b>'registrationInvitations.js'</b></i>
 
 
+### ✔ GET /getAllMessages
+**➜ needs token authentication**<br/>
+**➜ role: ALL**<br/>
+...OVĚŘIT, ZDA JE V CHANNELU<br/>
 
-<br/>
-<br/>
-<br/>
-<br/>
-<br/>
-<br/>
+get - list of all messages
 
+seřazeno podle data
 
-###??? get - list of users invitable to channel ???
-- params
-  - channelId
-
-return
+***Body:***
 ```
 {
-  text: 'Lukáš',
-  value: 1
+  channelsId: '5',
 }
+```
+
+***Return:***
+```
+➜ status 200 - OK
+  {
+    id: 1,
+    threadId: 10,
+    creator: {
+      id: 1,
+      name: 'Pepa'
+    },
+    created: Date.now(),
+    content: 'samotná zpava'
+  }
+  
+➜ status 500 - Internal Server Error
+➜ status 400 - Bad Request
+➜ status 403 - Forbidden
 ```
 or full user objects
 
-###??? post - submit new channel invitations ???
-body
-```
-{
-  channelId: 1,
-  userIds: []
-}
-```
+
+
+
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+<br/>
+
+
+
+
+
+
+
+
+
+
+
 
 
 

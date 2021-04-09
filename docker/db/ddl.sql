@@ -110,6 +110,7 @@ begin
 end;$$
 DELIMITER ;
 
+
 DELIMITER $$
 CREATE PROCEDURE registerAccount(in in_code varchar(50), in in_username varchar(50), in in_name varchar(100), in in_passwordHash varchar(512))
 BEGIN
@@ -134,4 +135,26 @@ BEGIN
     SELECT 'user-exists' AS 'output' FROM DUAL;
   END IF;
 END;
+$$ DELIMITER ;
+
+
+DELIMITER $$
+CREATE PROCEDURE `acceptChannelInvitation`(IN in_channelId INT, IN in_accountId INT)
+BEGIN
+  DECLARE count_invitations INT;
+  DECLARE count_accountInChannel INT;
+  DECLARE decl_invId INT;
+
+  SELECT COUNT(*) INTO count_invitations FROM channelInvitation WHERE channelId=in_channelId AND accountId=in_accountId AND accepted=0;
+	SELECT COUNT(*) INTO count_accountInChannel FROM accountInChannel WHERE channelId=in_channelId AND accountId=in_accountId;
+
+  IF count_invitations != 0 AND count_accountInChannel = 0 THEN
+	  SELECT MIN(id) INTO decl_invId FROM channelInvitation WHERE channelId=in_channelId AND accountId=in_accountId AND accepted=0;
+	  UPDATE channelInvitation SET accepted=1 WHERE id=decl_invId;
+	  INSERT INTO accountInChannel(channelId, accountId) VALUE (in_channelId, in_accountId);
+	  SELECT 'done' AS 'output' FROM DUAL;
+	ELSE
+	  SELECT 'not-found' AS 'output' FROM DUAL;
+  END IF;
+END
 $$ DELIMITER ;

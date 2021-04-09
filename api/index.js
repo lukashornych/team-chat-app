@@ -26,9 +26,13 @@ app.use(express.urlencoded({extended: true}));
 // Require API routes
 //const users = require('./routes/users');
 //const test = require('./routes/test');
+
+//const messages = require('./routes/messages');
+
 const accounts = require('./routes/accounts');
 const channels = require('./routes/channels');
 const registrationInvitations = require('./routes/registrationInvitations');
+const messages = require('./routes/messages');
 
 // Import API Routes
 //app.use(users);
@@ -36,6 +40,7 @@ const registrationInvitations = require('./routes/registrationInvitations');
 app.use(accounts);
 app.use(channels);
 app.use(registrationInvitations);
+app.use(messages);
 
 // Export express app
 module.exports = app;

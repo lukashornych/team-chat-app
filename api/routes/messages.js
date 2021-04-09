@@ -1,11 +1,67 @@
-const io = require('socket.io')(process.env.PORT);
+const { Router } = require('express');
+const jwt = require('jsonwebtoken');
+const pool = require('../index').connectionDB;
+//const io = require('socket.io')(process.env.PORT);
+const authenticateToken = require('../authenticateToken');
 
-io.on("connection", socket => {
+const router = Router();
+
+
+/**
+ ** GET ALL MESSAGES
+ ** authenticated by token
+ **/
+router.get('/getAllMessages', (req, res) => {
+  authenticateToken(req, res, (authenticated) => {
+    if (!authenticated) return res.sendStatus(403);
+
+    if (!req.body.channelId) res.sendStatus(400);
+
+    const channelId = req.body.channelId;
+
+    pool.query(`SELECT m.id AS messageId, m.threadId, m.created, m.content, a.id AS accountId, a.name, a.username ` +
+                `FROM channel ch JOIN thread t ON t.channelId=ch.id `+
+                `JOIN message m ON m.threadId=t.id ` +
+                `JOIN account a ON m.creatorId=a.id ` +
+                `WHERE ch.id=${channelId} ORDER BY m.threadId, m.created DESC;`, function (queryError, queryResults, queryFields) {
+      if (queryError) {
+        console.error(queryError);
+        res.sendStatus(500);
+      }
+
+      let ret = [];
+      queryResults.forEach((result) => {
+        console.log(result);
+        ret.push({
+          "id" : result.messageId,
+          "threadId" : result.threadId,
+          "creator" : {
+            "id" : result.messageId,
+            "name" : result.name,
+            "username" : result.username
+          },
+          "created" : result.created,
+          "content" : result.content
+        });
+      });
+
+      res.status(200).json(ret);
+    });
+  });
+});
+
+
+module.exports = router;
+
+
+
+
+/*io.on("connection", socket => {
   // either with send()
   socket.send("Hello!");
 
   // or with emit() and custom event names
-  socket.emit("greetings", "Hey!", { "ms": "jane" }, Buffer.from([4, 3, 3, 1]));
+
 
   // handle the event sent with socket.send()
   socket.on("message", (data) => {
@@ -13,7 +69,23 @@ io.on("connection", socket => {
   });
 
   // handle the event sent with socket.emit()
-  socket.on("salutations", (elem1, elem2, elem3) => {
-    console.log(elem1, elem2, elem3);
+  socket.on("newMessage", () => {
+
+    pool.query(`SELECT id, code, accepted  FROM registrationInvitation;`, function (queryError, queryResults, queryFields) {
+      if (queryError) {
+        console.error(queryError);
+      }
+    });
+
+    const emit = {
+      channelId: 1,
+      threadId: 2,
+      creatorId: 3,
+      content: 'message'
+    }
+    socket.emit("newMessage", emit);
   });
-});
+});*/
+
+
+
