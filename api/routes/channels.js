@@ -13,7 +13,7 @@ router.post('/createChannel', (req, res) => {
   authenticateToken(req, res, (authenticated) => {
     if (!authenticated) return res.sendStatus(401);
 
-    if (!req.body.type || !req.body.name || !req.body.description) return res.sendStatus(400);
+    if (!req.body.type || !req.body.name) return res.sendStatus(400);
     if (!(req.body.type === ("PRIVATE_GROUP") || req.body.type === "PUBLIC_CHANNEL")) return res.sendStatus(400); // takto funguje, (req.body.type !== ("PRIVATE_GROUP") || req.body.type !== "PUBLIC_CHANNEL") vyhodí error (400)!
 
     const type = req.body.type;
@@ -21,6 +21,16 @@ router.post('/createChannel', (req, res) => {
     const description = req.body.description;
     const userIds = req.body.userIds;
 
+    // 1st insert inputs
+    let insert = "name, type";
+    let insertValues = `'${name}', '${type}'`;
+
+    if (description) {
+      insert += ", description";
+      insertValues += `, '${type}'`;
+    }
+
+    // 2nd insert inputs
     let accountsInChannel = `(LAST_INSERT_ID(), '${req.user.id}')`;   // Sestavení vložení účtů
     if (userIds) {
       userIds.forEach((account) => {
@@ -31,26 +41,26 @@ router.post('/createChannel', (req, res) => {
     pool.getConnection(function (connectionError, connection) {  // DB connection from pool
       if (connectionError) {
         console.log(connectionError);
-        res.sendStatus(500);
+        return res.sendStatus(500);
       }
 
       connection.beginTransaction(function (transactionError) { // BEGIN TRANSACTION
         if (transactionError) {
           console.log(transactionError);
-          res.sendStatus(500);
+          return res.sendStatus(500);
         }
 
-        connection.query(`INSERT INTO channel(name, description, type) VALUE ('${name}', '${description}', '${type}');`, function (queryError, queryResults, queryFields) {
+        connection.query(`INSERT INTO channel(${insert}) VALUE (${insertValues});`, function (queryError, queryResults, queryFields) {
           if (queryError) {
             console.error(queryError);
-            res.sendStatus(500);
+            return res.sendStatus(500);
           }
         });
 
         connection.query(`INSERT INTO accountInChannel(channelId, accountId) VALUES ${accountsInChannel};`, function (queryError, queryResults, queryFields) {
           if (queryError) {
             console.error(queryError);
-            res.sendStatus(500);
+            return res.sendStatus(500);
           }
         });
 
@@ -58,7 +68,7 @@ router.post('/createChannel', (req, res) => {
           if (commitError) {
             return connection.rollback(function () {
               console.log(commitError);
-              res.sendStatus(500);
+              return res.sendStatus(500);
             });
           }
 
@@ -96,7 +106,7 @@ router.put('/updateChannel', (req, res) => {
     pool.query(`UPDATE channel SET ${setter.toString()} WHERE id='${id}' ;`, function (queryError, queryResults, queryFields) {
       if (queryError) {
         console.error(queryError);
-        res.sendStatus(500);
+        return res.sendStatus(500);
       }
 
       res.sendStatus(200);
@@ -120,7 +130,7 @@ router.get('/getChannels', (req, res) => {
     SELECT id, name, description, type FROM channel WHERE type='PUBLIC_CHANNEL';`, function (queryError, queryResults, queryFields) {
       if (queryError) {
         console.error(queryError);
-        res.sendStatus(500);
+        return res.sendStatus(500);
       }
 
       res.status(200).json(queryResults);
@@ -143,7 +153,7 @@ router.get('/getChannelInvitations', (req, res) => {
     pool.query(`SELECT ch.id, ch.name  FROM channel ch JOIN channelInvitation chi ON ch.id=chi.channelId WHERE chi.accountId='${id}' AND accepted='0';`, function (queryError, queryResults, queryFields) {
       if (queryError) {
         console.error(queryError);
-        res.sendStatus(500);
+        return res.sendStatus(500);
       }
 
       res.status(200).json(queryResults);
@@ -169,7 +179,7 @@ router.post('/acceptChannelInvitation', (req, res) => {
     pool.query(`CALL acceptChannelInvitation('${channelId}', '${userId}');`, function (queryError, queryResults, queryFields) {
       if (queryError) {
         console.error(queryError);
-        res.sendStatus(500);
+        return res.sendStatus(500);
       }
 
       if (queryResults[0][0].output === "done") {
@@ -205,7 +215,7 @@ router.post('/createChannelInvitation', (req, res) => {
       pool.query(`INSERT INTO channelInvitation(channelId, accountId) VALUES ${insert.toString()};`, function (queryError, queryResults, queryFields) {
         if (queryError) {
           console.error(queryError);
-          res.sendStatus(500);
+          return res.sendStatus(500);
         }
 
         res.sendStatus(200);
@@ -231,7 +241,7 @@ router.get('/getChannelsInvitableAccounts/:channelId', (req, res) => {
                 `AND id NOT IN (SELECT accountId FROM accountInChannel WHERE channelId=${channelId});`, function (queryError, queryResults, queryFields) {
       if (queryError) {
         console.error(queryError);
-        res.sendStatus(500);
+        return res.sendStatus(500);
       }
 
       res.status(200).json(queryResults);

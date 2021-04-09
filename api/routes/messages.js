@@ -20,10 +20,8 @@ router.get('/getAllMessages/:id', (req, res) => {
     let dotaz = "";
     if (thread === "true") {
       dotaz = `WHERE t.id=${id}`;
-      console.log(dotaz);
     } else {
       dotaz = `WHERE ch.id=${id}`;
-      console.log(dotaz);
     }
 
     pool.query(`SELECT m.id AS messageId, m.threadId, m.created, m.content, a.id AS accountId, a.name, a.username ` +
