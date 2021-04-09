@@ -22,8 +22,10 @@ module.exports.connectionDB = pool;
 const app = express();
 const server = http.createServer(app);
 
+// Export express app
+module.exports = app;
 // Export http server
-module.exports = server;
+//module.exports = server;
 
 // Express use parsers
 app.use(cookieParser());
@@ -41,9 +43,6 @@ app.use(accounts);
 app.use(channels);
 app.use(registrationInvitations);
 app.use(messages);
-
-// Export express app
-//module.exports = app;
 
 // Start standalone server if directly running
 if (require.main === module) {

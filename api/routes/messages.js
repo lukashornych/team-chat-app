@@ -1,8 +1,8 @@
 const { express, Router } = require('express');
 const jwt = require('jsonwebtoken');
 const pool = require('../index').connectionDB;
-const server = require('../index');
-const io = require('socket.io')(server);
+const app = require('../index').app;
+const io = require('socket.io')(app);
 const authenticateToken = require('../authenticateToken');
 
 const router = Router();
@@ -56,17 +56,22 @@ io.on("connection", socket => {
   // handle the event sent with socket.emit()
   socket.on("newMessage", () => {
 
-    pool.query(`SELECT id, code, accepted  FROM registrationInvitation;`, function (queryError, queryResults, queryFields) {
+    /*pool.query(`SELECT id, code, accepted  FROM registrationInvitation;`, function (queryError, queryResults, queryFields) {
       if (queryError) {
         console.error(queryError);
       }
-    });
+    });*/
 
     const emit = {
-      channelId: 1,
-      threadId: 2,
-      creatorId: 3,
-      content: 'message'
+      "id" : 1,
+      "threadId" : "1",
+      "creator" : {
+        "id" : "1",
+        "name" : "name",
+        "username" : "username"
+      },
+      "created" : "22.10.2021 12:15",
+      "content" : "Nazdar."
     }
     socket.emit("newMessage", emit);
   });
