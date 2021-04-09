@@ -13,8 +13,6 @@ export default {
     }
   },
 
-  emits: ['messagesUpdated'],
-
   data () {
     return {
       messages: []
@@ -38,10 +36,10 @@ export default {
     )
   },
 
-  beforeMounted () {
+  beforeMount () {
     this.socket.on('newMessage', function (newMessage) {
       if (newMessage.threadId === this.threadId) {
-        this.messages.push(newMessage)
+        this.messages.unshift(newMessage)
       }
     })
   }
@@ -70,7 +68,7 @@ export default {
           :key="message.id"
         >
           <VListItemAvatar>
-            <VImg src="https://cdn.vuetifyjs.com/images/john.png" />
+            <VImg :src="`/api/getAccountPhoto/${message.creator.id}`" />
           </VListItemAvatar>
 
           <VListItemContent>

@@ -121,7 +121,7 @@ export default {
       <VList>
         <VListItem>
           <VListItemAvatar>
-            <VImg src="https://cdn.vuetifyjs.com/images/john.png" />
+            <VImg :src="`/api/getAccountPhoto/${$store.state.account.loggedInUser.id}`" />
           </VListItemAvatar>
         </VListItem>
 
