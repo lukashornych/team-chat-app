@@ -1,5 +1,6 @@
 require('dotenv').config({ path: __dirname + '/../.env' });
 
+const http = require('http');
 const express = require('express');
 const cookieParser = require('cookie-parser');
 const jwt = require('jsonwebtoken');
@@ -16,40 +17,38 @@ const pool = mysql.createPool({
 });
 module.exports.connectionDB = pool;
 
-// Create express instance
-const app = express();
 
+// Create express and http instance
+const app = express();
+const server = http.createServer(app);
+
+// Export http server
+module.exports = server;
+
+// Express use parsers
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 
 // Require API routes
-//const users = require('./routes/users');
-//const test = require('./routes/test');
-
-//const messages = require('./routes/messages');
-
 const accounts = require('./routes/accounts');
 const channels = require('./routes/channels');
 const registrationInvitations = require('./routes/registrationInvitations');
 const messages = require('./routes/messages');
 
-// Import API Routes
-//app.use(users);
-//app.use(test);
+// Use API Routes
 app.use(accounts);
 app.use(channels);
 app.use(registrationInvitations);
 app.use(messages);
 
 // Export express app
-module.exports = app;
+//module.exports = app;
 
 // Start standalone server if directly running
 if (require.main === module) {
   const port = process.env.PORT || 3001;
-  app.listen(port, () => {
-    // eslint-disable-next-line no-console
+  server.listen(port, () => {
     console.log(`API server listening on port ${port}`);
   });
 }

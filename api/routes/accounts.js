@@ -1,9 +1,8 @@
 const { Router } = require('express');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-
-const api = require('../index');
-const pool = api.connectionDB;
+const pool = require('../index').connectionDB;
+const authenticateToken = require('../authenticateToken');
 
 const router = Router();
 
@@ -102,10 +101,10 @@ router.post('/login', (req, res) => {
 /**
  ** UPDATE ACCOUNT
  ** authenticated by token
- **/ //TODO udělat parametry nepovinné, např newPassword/username/name nepovinné
+ **/
 router.put('/updateAccount', (req, res) => {
   authenticateToken(req, res, (authenticated) => {
-    if (!authenticated) return res.sendStatus(403);
+    if (!authenticated) return res.sendStatus(401);
 
     if (!req.body.userId || (!req.body.name && !req.body.username && !req.body.newPassword)) return res.sendStatus(400);
 
@@ -133,36 +132,12 @@ router.put('/updateAccount', (req, res) => {
 
 
 /**
- ** UPDATE ACCOUNT ROLE
- ** authenticated by token
- **/
-router.put('/updateAccountRole', (req, res) => {
-  authenticateToken(req, res, (authenticated) => {
-    if (!authenticated) return res.sendStatus(403);
-
-    if (!req.body.userId || !req.body.role) return res.sendStatus(400);
-
-    const userId = req.body.userId;
-    const role = req.body.role;
-
-    pool.query(`UPDATE account SET role='${role}' WHERE id='${userId}';`, function (queryError, queryResults, queryFields) {
-      if (queryError) {
-        console.error(queryError);
-        res.sendStatus(500);
-      }
-
-      res.sendStatus(200);
-    });
-  });
-});
-
-/**
  ** GET ALL USERS
  ** authenticated by token
  **/
 router.get('/getAllAccounts', (req, res) => {
   authenticateToken(req, res, (authenticated) => {
-    if (!authenticated) return res.sendStatus(403);
+    if (!authenticated) return res.sendStatus(401);
 
     pool.query(`SELECT id, name, username, role FROM account;`, function (queryError, queryResults, queryFields) {
       if (queryError) {
@@ -178,43 +153,6 @@ router.get('/getAllAccounts', (req, res) => {
 
 module.exports = router;
 
-
-/**
- ** Token authentication function
- ** @param req
- ** @param res
- ** @param callback
- **/
-const authenticateToken = function (req, res, callback) {
-  if(!req.cookies["jwt-hs"] || !req.cookies["jwt-payload"]) return callback(false);
-
-  const hs = req.cookies["jwt-hs"].split(".");
-
-  let token;
-  if (hs.length === 2) {
-    token = hs[0] + "." + req.cookies["jwt-payload"] + "." + hs[1];
-  }
-
-
-  if(token == null) {
-    res.clearCookie("jwt-hs");
-    res.clearCookie("jwt-payload");
-    return callback(false);
-  }
-
-  jwt.verify(token, process.env.TOKEN_PRIVATE, (verifyError, user) => {
-    if (verifyError) {
-      console.error(verifyError);
-      //return res.sendStatus(403);
-      res.clearCookie("jwt-hs");
-      res.clearCookie("jwt-payload");
-      return callback(false);
-    }
-
-    req.user = user;
-    callback(true);
-  });
-}
 
 
 

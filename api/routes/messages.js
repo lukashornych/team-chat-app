@@ -1,23 +1,21 @@
-const { Router } = require('express');
+const { express, Router } = require('express');
 const jwt = require('jsonwebtoken');
 const pool = require('../index').connectionDB;
-//const io = require('socket.io')(process.env.PORT);
+const server = require('../index');
+const io = require('socket.io')(server);
 const authenticateToken = require('../authenticateToken');
 
 const router = Router();
-
 
 /**
  ** GET ALL MESSAGES
  ** authenticated by token
  **/
-router.get('/getAllMessages', (req, res) => {
+router.get('/getAllMessages/:channelId', (req, res) => {
   authenticateToken(req, res, (authenticated) => {
-    if (!authenticated) return res.sendStatus(403);
+    if (!authenticated) return res.sendStatus(401);
 
-    if (!req.body.channelId) res.sendStatus(400);
-
-    const channelId = req.body.channelId;
+    const channelId = req.params.channelId;
 
     pool.query(`SELECT m.id AS messageId, m.threadId, m.created, m.content, a.id AS accountId, a.name, a.username ` +
                 `FROM channel ch JOIN thread t ON t.channelId=ch.id `+
@@ -54,20 +52,7 @@ router.get('/getAllMessages', (req, res) => {
 module.exports = router;
 
 
-
-
-/*io.on("connection", socket => {
-  // either with send()
-  socket.send("Hello!");
-
-  // or with emit() and custom event names
-
-
-  // handle the event sent with socket.send()
-  socket.on("message", (data) => {
-    console.log(data);
-  });
-
+io.on("connection", socket => {
   // handle the event sent with socket.emit()
   socket.on("newMessage", () => {
 
@@ -85,7 +70,7 @@ module.exports = router;
     }
     socket.emit("newMessage", emit);
   });
-});*/
+});
 
 
 

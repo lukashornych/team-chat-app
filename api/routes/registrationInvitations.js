@@ -1,6 +1,7 @@
 const { Router } = require('express');
 const jwt = require('jsonwebtoken');
 const pool = require('../index').connectionDB;
+const authenticateToken = require('../authenticateToken');
 
 const router = Router();
 
@@ -12,7 +13,7 @@ const characters ='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz012345678
  **/
 router.get('/getAllRegistrationInvitations', (req, res) => {
   authenticateToken(req, res, (authenticated) => {
-    if (!authenticated) return res.sendStatus(403);
+    if (!authenticated) return res.sendStatus(401);
 
     pool.query(`SELECT id, code, accepted  FROM registrationInvitation;`, function (queryError, queryResults, queryFields) {
       if (queryError) {
@@ -32,7 +33,7 @@ router.get('/getAllRegistrationInvitations', (req, res) => {
  **/
 router.post('/generateRegistrationInvitation', (req, res) => {
   authenticateToken(req, res, (authenticated) => {
-    if (!authenticated) return res.sendStatus(403);
+    if (!authenticated) return res.sendStatus(401);
 
     const amount = req.body.amount;
 
@@ -60,46 +61,6 @@ router.post('/generateRegistrationInvitation', (req, res) => {
 
 
 module.exports = router;
-
-
-  /**
-   ** Token authentication function
-   ** @param req
-   ** @param res
-   ** @param callback
-   **/
-  const authenticateToken = function (req, res, callback) {
-    if(!req.cookies["jwt-hs"] || !req.cookies["jwt-payload"]) return callback(false);
-
-    const hs = req.cookies["jwt-hs"].split(".");
-
-    let token;
-    if (hs.length === 2) {
-      token = hs[0] + "." + req.cookies["jwt-payload"] + "." + hs[1];
-    }
-
-
-    if(token == null) {
-      res.clearCookie("jwt-hs");
-      res.clearCookie("jwt-payload");
-      return callback(false);
-    }
-
-    jwt.verify(token, process.env.TOKEN_PRIVATE, (verifyError, user) => {
-      if (verifyError) {
-        console.error(verifyError);
-        //return res.sendStatus(403);
-        res.clearCookie("jwt-hs");
-        res.clearCookie("jwt-payload");
-        return callback(false);
-      }
-
-      req.user = user;
-      callback(true);
-    });
-  }
-
-
 
 
 function generateString(length) {

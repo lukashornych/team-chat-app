@@ -75,7 +75,7 @@ post - register
 ### ✔ PUT /updateAccount
 **➜ needs token authentication**<br/>
 **➜ role: ALL**<br/>
-Pouze admin může změnit role.
+Pouze admin může změnit role!
 
 put - update user account
 
@@ -94,29 +94,9 @@ put - update user account
 ➜ status 200 - OK
 ➜ status 500 - Internal Server Error
 ➜ status 400 - Bad Request
-➜ status 403 - Forbidden
+➜ status 401 - Unauthorized
 ```
 
-### ✔ PUT /updateAccountRole  -> MAYBE WILL GO AWAY
-**➜ needs token authentication**<br/>
-
-put - update user role
-
-***Body:***
-```
-{
-  userId: 1,
-  role: 'role1'
-}
-```
-maybe merge with user update endpoint???
-
-***Return:***
-```
-➜ status 200 - OK
-➜ status 500 - Internal Server Error
-➜ status 400 - Bad Request
-```
 
 ### ✔ GET /getAllAccounts
 **➜ needs token authentication**<br/>
@@ -136,7 +116,7 @@ get - list of all users
 ]
 
 ➜ status 500 - Internal Server Error
-➜ status 403 - Forbidden
+➜ status 401 - Unauthorized
 ```
 { 
 text: 'Lukáš',
@@ -180,7 +160,7 @@ return
 ➜ status 200 - OK
 ➜ status 500 - Internal Server Error
 ➜ status 400 - Bad Request
-➜ status 403 - Forbidden
+➜ status 401 - Unauthorized
 ```
 
 ### ✔ PUT /updateChannel
@@ -204,7 +184,7 @@ put - edit channel/group
 ➜ status 200 - OK
 ➜ status 500 - Internal Server Error
 ➜ status 400 - Bad Request
-➜ status 403 - Forbidden
+➜ status 401 - Unauthorized
 ```
 
 ### ✔ GET /getChannels
@@ -226,7 +206,7 @@ get - list of all user's channels
   ]
 
 ➜ status 500 - Internal Server Error
-➜ status 403 - Forbidden
+➜ status 401 - Unauthorized
 ```
 
 ### ✔ GET /getChannelInvitations
@@ -248,7 +228,7 @@ get - list of all user's channel invitations
   ]
   
 ➜ status 500 - Internal Server Error
-➜ status 403 - Forbidden
+➜ status 401 - Unauthorized
 ```
 
 ### ✔ POST /acceptChannelInvitation
@@ -270,6 +250,7 @@ post - accept channel invitation
 ➜ status 500 - Internal Server Error
 ➜ status 400 - Bad Request
 ➜ status 403 - Forbidden
+➜ status 401 - Unauthorized
 ```
 
 ### ✔ POST /createChannelInvitation
@@ -294,22 +275,15 @@ ALL - PRIVATE_CHANNEL<br/>
 ➜ status 200 - OK
 ➜ status 500 - Internal Server Error
 ➜ status 400 - Bad Request
-➜ status 403 - Forbidden
+➜ status 401 - Unauthorized
 ```
 
 
-### ✔ GET /getChannelsInvitableAccounts
+### ✔ GET /getChannelsInvitableAccounts/:channelId
 get - list of users invitable to channel
 **➜ role: ALL**<br/>
 Moderator, Admin - PUBLIC_CHANNEL<br/>
 ALL - PRIVATE_CHANNEL<br/>
-
-***Body:***
-```
-{
-  channelId: 1
-}
-```
 
 ***Return:***
 ```
@@ -323,8 +297,7 @@ ALL - PRIVATE_CHANNEL<br/>
   ]
   
 ➜ status 500 - Internal Server Error
-➜ status 400 - Bad Request
-➜ status 403 - Forbidden
+➜ status 401 - Unauthorized
 ```
 or full user objects
 
@@ -360,7 +333,7 @@ get - list all registration invitations
   ]
 
 ➜ status 500 - Internal Server Error
-➜ status 403 - Forbidden
+➜ status 401 - Unauthorized
 ```
 
 
@@ -381,7 +354,7 @@ post - generate new registration invitation
 ```
 ➜ status 200 - OK
 ➜ status 500 - Internal Server Error
-➜ status 403 - Forbidden
+➜ status 401 - Unauthorized
 ```
 
 
@@ -397,7 +370,7 @@ post - generate new registration invitation
 <i>Soubor <b>'registrationInvitations.js'</b></i>
 
 
-### ✔ GET /getAllMessages
+### ✔ GET /getAllMessages/:channelId
 **➜ needs token authentication**<br/>
 **➜ role: ALL**<br/>
 ...OVĚŘIT, ZDA JE V CHANNELU<br/>
@@ -428,8 +401,7 @@ seřazeno podle data
   }
   
 ➜ status 500 - Internal Server Error
-➜ status 400 - Bad Request
-➜ status 403 - Forbidden
+➜ status 401 - Unauthorized
 ```
 or full user objects
 
@@ -442,21 +414,6 @@ or full user objects
 <br/>
 <br/>
 <br/>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

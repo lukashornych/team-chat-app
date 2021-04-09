@@ -1,6 +1,7 @@
 const { Router } = require('express');
 const jwt = require('jsonwebtoken');
 const pool = require('../index').connectionDB;
+const authenticateToken = require('../authenticateToken');
 
 const router = Router();
 
@@ -10,7 +11,7 @@ const router = Router();
  **/
 router.post('/createChannel', (req, res) => {
   authenticateToken(req, res, (authenticated) => {
-    if (!authenticated) return res.sendStatus(403);
+    if (!authenticated) return res.sendStatus(401);
 
     if (!req.body.type || !req.body.name || !req.body.description) return res.sendStatus(400);
     if (!(req.body.type === ("PRIVATE_GROUP") || req.body.type === "PUBLIC_CHANNEL")) return res.sendStatus(400); // takto funguje, (req.body.type !== ("PRIVATE_GROUP") || req.body.type !== "PUBLIC_CHANNEL") vyhodí error (400)!
@@ -82,7 +83,7 @@ router.get('', (req, res) => {
  **/
 router.put('/updateChannel', (req, res) => {
   authenticateToken(req, res, (authenticated) => {
-    if (!authenticated) return res.sendStatus(403);
+    if (!authenticated) return res.sendStatus(401);
 
     if (!req.body.id || (!req.body.name && !req.body.description)) return res.sendStatus(400);
 
@@ -111,7 +112,7 @@ router.put('/updateChannel', (req, res) => {
  **/
 router.get('/getChannels', (req, res) => {
   authenticateToken(req, res, (authenticated) => {
-    if (!authenticated) return res.sendStatus(403);
+    if (!authenticated) return res.sendStatus(401);
 
     const id = req.user.id;
 
@@ -135,7 +136,7 @@ router.get('/getChannels', (req, res) => {
  **/
 router.get('/getChannelInvitations', (req, res) => {
   authenticateToken(req, res, (authenticated) => {
-    if (!authenticated) return res.sendStatus(403);
+    if (!authenticated) return res.sendStatus(401);
 
     const id = req.user.id;
 
@@ -155,10 +156,10 @@ router.get('/getChannelInvitations', (req, res) => {
 /**
  ** ACCEPT CHANNEL INVITATION
  ** authenticated by token
- **/ //TODO OTESTOVAT
+ **/
 router.post('/acceptChannelInvitation', (req, res) => {
   authenticateToken(req, res, (authenticated) => {
-    if (!authenticated) return res.sendStatus(403);
+    if (!authenticated) return res.sendStatus(401);
 
     if (!req.body.userId || !req.body.channelId) return res.sendStatus(400);
 
@@ -187,7 +188,7 @@ router.post('/acceptChannelInvitation', (req, res) => {
  **/
 router.post('/createChannelInvitation', (req, res) => {
   authenticateToken(req, res, (authenticated) => {
-    if (!authenticated) return res.sendStatus(403);
+    if (!authenticated) return res.sendStatus(401);
 
     if (!req.body.userIds || !req.body.channelId) return res.sendStatus(400);
 
@@ -219,13 +220,11 @@ router.post('/createChannelInvitation', (req, res) => {
  ** GET ALL INVITABLE ACCOUNTS TO CHANNEL
  ** authenticated by token
  **/
-router.get('/getChannelsInvitableAccounts', (req, res) => {
+router.get('/getChannelsInvitableAccounts/:channelId', (req, res) => {
   authenticateToken(req, res, (authenticated) => {
-    if (!authenticated) return res.sendStatus(403);
+    if (!authenticated) return res.sendStatus(401);
 
-    if (!req.body.channelId) return res.sendStatus(400);
-
-    const channelId = req.body.channelId;
+    const channelId = req.params.channelId;
 
     pool.query(`SELECT id, name, username FROM account WHERE ` +
                 `id NOT IN (SELECT accountId FROM channelInvitation WHERE channelId=${channelId}) ` +
@@ -242,41 +241,3 @@ router.get('/getChannelsInvitableAccounts', (req, res) => {
 
 
 module.exports = router;
-
-
-/**
- ** Token authentication function
- ** @param req
- ** @param res
- ** @param callback
- **/
-const authenticateToken = function (req, res, callback) {
-  if(!req.cookies["jwt-hs"] || !req.cookies["jwt-payload"]) return callback(false);
-
-  const hs = req.cookies["jwt-hs"].split(".");
-
-  let token;
-  if (hs.length === 2) {
-    token = hs[0] + "." + req.cookies["jwt-payload"] + "." + hs[1];
-  }
-
-
-  if(token == null) {
-    res.clearCookie("jwt-hs");
-    res.clearCookie("jwt-payload");
-    return callback(false);
-  }
-
-  jwt.verify(token, process.env.TOKEN_PRIVATE, (verifyError, user) => {
-    if (verifyError) {
-      console.error(verifyError);
-      //return res.sendStatus(403);
-      res.clearCookie("jwt-hs");
-      res.clearCookie("jwt-payload");
-      return callback(false);
-    }
-
-    req.user = user;
-    callback(true);
-  });
-}
