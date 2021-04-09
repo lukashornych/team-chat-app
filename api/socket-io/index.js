@@ -1,6 +1,6 @@
 const http = require('http');
 const socket = require('socket.io');
-const pool = require('../index');
+const pool = require('../index').connectionDB;
 
 
 export default function() {
@@ -20,7 +20,7 @@ export default function() {
         let threadId = message.threadId;
         if (!threadId) threadId = null;
 
-        pool.query(`CALL insertMessage('${message.channelId}', '${threadId}', '${message.creatorId}', '${message.content}');`, function (queryError, queryResults, queryFields) {
+        pool.query(`CALL insertMessage(${message.channelId}, ${threadId}, '${message.creatorId}', '${message.content}');`, function (queryError, queryResults, queryFields) {
           if (queryError) {
             return console.error(queryError);
           }

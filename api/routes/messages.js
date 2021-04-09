@@ -1,7 +1,6 @@
 const { express, Router } = require('express');
 const jwt = require('jsonwebtoken');
 const pool = require('../index').connectionDB;
-const app = require('../index').app;
 const authenticateToken = require('../authenticateToken');
 
 const router = Router();
@@ -31,10 +30,10 @@ router.get('/getAllMessages/:id', (req, res) => {
                 `FROM channel ch JOIN thread t ON t.channelId=ch.id `+
                 `JOIN message m ON m.threadId=t.id ` +
                 `JOIN account a ON m.creatorId=a.id ` +
-                `${dotaz} ORDER BY m.threadId, m.created DESC;`, function (queryError, queryResults, queryFields) {
+                `${dotaz} ORDER BY m.threadId, m.created ASC;`, function (queryError, queryResults, queryFields) {
       if (queryError) {
         console.error(queryError);
-        res.sendStatus(500);
+        return res.sendStatus(500);
       }
 
       let ret = [];
