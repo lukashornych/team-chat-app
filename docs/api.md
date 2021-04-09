@@ -422,15 +422,18 @@ or full user objects
 <br/>
 
 
-
+BASE 64 fotky -> udělat z toho arraybuffer, uložit na filesystem
+end point na vrácení fotky (ne json)!
+https://github.com/beatgammit/base64-js
 
 
 
 
 
 ## Socket.io API
-### emit new message
+### on new message
 event name = `newMessage`
+
 ```
 {
   channelId: 1,
@@ -440,6 +443,6 @@ event name = `newMessage`
 }
 ```
 
-### return new message
+### emit new message
 event name = `newMessage`
 return full user object

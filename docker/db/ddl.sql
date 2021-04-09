@@ -158,3 +158,18 @@ BEGIN
   END IF;
 END
 $$ DELIMITER ;
+
+
+DELIMITER $$
+CREATE PROCEDURE insertMessage(IN in_channelId INT, IN in_threadId INT, IN in_creatorId INT, IN in_content VARCHAR(2048))
+BEGIN
+IF in_threadId IS NULL THEN
+	INSERT INTO thread (channelId) VALUE (in_channelId);
+	INSERT INTO message(threadId, creatorId, content) VALUE (last_insert_id(), in_creatorId, in_content);
+	SELECT m.id AS messageId, m.threadId, m.created, m.content, a.id AS accountId, a.name, a.username FROM message m JOIN account a ON m.creatorId=a.id WHERE m.id=last_insert_id();
+ELSE
+	INSERT INTO message(threadId, creatorId, content) VALUE (in_threadId, in_creatorId, in_content);
+	SELECT m.id AS messageId, m.threadId, m.created, m.content, a.id AS accountId, a.name, a.username FROM message m JOIN account a ON m.creatorId=a.id WHERE m.id=last_insert_id();
+END IF;
+END;
+$$ DELIMITER ;
