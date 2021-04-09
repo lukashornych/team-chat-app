@@ -314,6 +314,12 @@ or full user objects
 
 <i>Soubor <b>'registrationInvitations.js'</b></i>
 
+### GET /getAccountPhoto/:accountId
+
+- musí být uživatel přihlášen, role je jedno
+
+vrátí konkrétní obrázek
+
 
 ### ✔ GET /getAllRegistrationInvitations
 **➜ needs token authentication**<br/>

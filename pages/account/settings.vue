@@ -191,7 +191,6 @@ export default {
         type="password"
       />
 
-      <!-- todo: photo and in other places -->
       <VFileInput
         label="Nová fotografie"
         truncate-length="15"
