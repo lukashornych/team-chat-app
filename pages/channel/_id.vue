@@ -59,7 +59,7 @@ export default {
         @click="showThread(message)"
       >
         <VListItemAvatar>
-          <VImg src="https://cdn.vuetifyjs.com/images/john.png" />
+          <VImg :src="`/api/getAccountPhoto/${message.creator.id}`" />
         </VListItemAvatar>
 
         <VListItemContent>
@@ -78,7 +78,6 @@ export default {
       v-if="showThreadDialog"
       :socket="socket"
       :thread-id="selectedThreadId"
-      @messagesUpdated="$fetch"
       @input="showThreadDialog = false"
     />
   </div>
