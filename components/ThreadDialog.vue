@@ -21,8 +21,8 @@ export default {
     }
   },
 
-  fetch () {
-    this.messages = this.$http.$get(
+  async fetch () {
+    this.messages = await this.$http.$get(
       `/api/getAllMessages/${this.$route.params.id}?thread=true`,
       {
         hooks: {

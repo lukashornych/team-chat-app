@@ -1,5 +1,6 @@
 <script>
 import { required, minLength } from 'vuelidate/lib/validators'
+import base64js from 'base64-js'
 
 export default {
   data () {
@@ -7,7 +8,8 @@ export default {
       account: {
         name: this.$store.state.account.loggedInUser.name,
         username: this.$store.state.account.loggedInUser.username,
-        newPassword: ''
+        newPassword: '',
+        newPhoto: null
       },
       registrationInvitations: [],
       users: [],
@@ -67,21 +69,28 @@ export default {
   },
 
   methods: {
-    updatePhoto (files) {
-      console.log(files)
+    updatePhoto (photoFile) {
+      this.account.newPhoto = photoFile
     },
 
     async saveAccount () {
       this.$v.account.$touch()
 
       if (!this.$v.account.$invalid) {
+        let serializedNewPhoto = null
+        if (this.account.newPhoto != null) {
+          const photoBinaryData = await this.account.newPhoto.arrayBuffer()
+          serializedNewPhoto = base64js.fromByteArray(new Uint8Array(photoBinaryData))
+        }
+
         await this.$http.put(
           '/api/updateAccount',
           {
             userId: this.account.id,
             name: this.account.name,
             username: this.account.username,
-            newPassword: this.account.newPassword
+            newPassword: this.account.newPassword,
+            newPhoto: serializedNewPhoto
           },
           {
             hooks: {
@@ -182,10 +191,12 @@ export default {
         type="password"
       />
 
-      <!-- todo: photo and in other places -->
       <VFileInput
+        label="Nová fotografie"
         truncate-length="15"
         outlined
+        prepend-icon="mdi-camera"
+        accept="image/png, image/jpeg, image/bmp"
         @change="updatePhoto($event)"
       />
 
