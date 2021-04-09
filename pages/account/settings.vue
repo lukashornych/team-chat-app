@@ -32,22 +32,21 @@ export default {
   },
 
   async fetch () {
-    // todo server documented
-    if (this.$store.getters) {
-      this.registrationInvitations = [
+    if (this.$store.getters['account/isAdministrator']) {
+      this.registrationInvitations = await this.$http.$get(
+        '/api/getAllRegistrationInvitations',
         {
-          code: 'aa',
-          accepted: false
-        },
-        {
-          code: 'bb',
-          accepted: true
-        },
-        {
-          code: 'cc',
-          accepted: false
+          hooks: {
+            afterResponse: [
+              (req, opt, res) => {
+                if (res.statusCode === 401) {
+                  this.$router.push({ name: 'auth-login' })
+                }
+              }
+            ]
+          }
         }
-      ]
+      )
 
       this.users = await this.$http.$get(
         '/api/getAllAccounts',
@@ -55,7 +54,7 @@ export default {
           hooks: {
             afterResponse: [
               (req, opt, res) => {
-                if (res.statusCode === 403) {
+                if (res.statusCode === 401) {
                   this.$router.push({ name: 'auth-login' })
                 }
               }
@@ -68,6 +67,10 @@ export default {
   },
 
   methods: {
+    updatePhoto (files) {
+      console.log(files)
+    },
+
     async saveAccount () {
       this.$v.account.$touch()
 
@@ -84,7 +87,7 @@ export default {
             hooks: {
               afterResponse: [
                 (req, opt, res) => {
-                  if (res.statusCode === 403) {
+                  if (res.statusCode === 401) {
                     this.$router.push({ name: 'auth-login' })
                   }
                 }
@@ -96,7 +99,21 @@ export default {
     },
 
     async generateRegistrationCode () {
-      // todo: server documented
+      await this.$http.$post(
+        '/api/generateRegistrationInvitation',
+        {
+          hooks: {
+            afterResponse: [
+              (req, opt, res) => {
+                if (res.statusCode === 401) {
+                  this.$router.push({ name: 'auth-login' })
+                }
+              }
+            ]
+          }
+        }
+      )
+
       await this.$fetch()
     },
 
@@ -114,7 +131,7 @@ export default {
 
     async saveEditingUserRole () {
       await this.$http.$put(
-        '/api/updateAccountRole',
+        '/api/updateAccount',
         {
           userId: this.editingUser.id,
           role: this.editingUser.role
@@ -123,7 +140,7 @@ export default {
           hooks: {
             afterResponse: [
               (req, opt, res) => {
-                if (res.statusCode === 403) {
+                if (res.statusCode === 401) {
                   this.$router.push({ name: 'auth-login' })
                 }
               }
@@ -165,7 +182,12 @@ export default {
         type="password"
       />
 
-      <!-- todo: photo -->
+      <!-- todo: photo and in other places -->
+      <VFileInput
+        truncate-length="15"
+        outlined
+        @change="updatePhoto($event)"
+      />
 
       <VBtn type="submit">
         Uložit

@@ -16,23 +16,48 @@ export default {
     }
   },
 
-  fetch () {
-    // todo server documented
-    this.users = [
+  async fetch () {
+    const users = await this.$http.$get(
+      `/api/getChannelsInvitableAccounts/${this.channel.id}`,
       {
-        text: 'Lukáš',
-        value: 1
-      },
-      {
-        text: 'Tomáš',
-        value: 2
+        hooks: {
+          afterResponse: [
+            (req, opt, res) => {
+              if (res.statusCode === 401) {
+                this.$router.push({ name: 'auth-login' })
+              }
+            }
+          ]
+        }
       }
-    ]
+    )
+
+    this.users = users.map(u => ({
+      text: u.name,
+      value: u.id
+    }))
   },
 
   methods: {
     submit () {
-      console.log('sending requests') // todo: server documented
+      this.$http.$post(
+        '/api/createChannelInvitation',
+        {
+          channelId: this.channel.id,
+          userIds: this.selectedUsers.map(u => u.value)
+        },
+        {
+          hooks: {
+            afterResponse: [
+              (req, opt, res) => {
+                if (res.statusCode === 401) {
+                  this.$router.push({ name: 'auth-login' })
+                }
+              }
+            ]
+          }
+        }
+      )
 
       this.$emit('input', false)
     }

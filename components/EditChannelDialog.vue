@@ -40,7 +40,7 @@ export default {
               hooks: {
                 afterResponse: [
                   (req, opt, res) => {
-                    if (res.statusCode === 403) {
+                    if (res.statusCode === 401) {
                       this.$router.push({ name: 'auth-login' })
                     }
                   }

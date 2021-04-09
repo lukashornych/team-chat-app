@@ -20,7 +20,7 @@ export default {
         hooks: {
           afterResponse: [
             (req, opt, res) => {
-              if (res.statusCode === 403) {
+              if (res.statusCode === 401) {
                 this.$router.push({ name: 'auth-login' })
               }
             }
@@ -35,7 +35,7 @@ export default {
         hooks: {
           afterResponse: [
             (req, opt, res) => {
-              if (res.statusCode === 403) {
+              if (res.statusCode === 401) {
                 this.$router.push({ name: 'auth-login' })
               }
             }
@@ -97,7 +97,7 @@ export default {
           hooks: {
             afterResponse: [
               (req, opt, res) => {
-                if (res.statusCode === 403) {
+                if (res.statusCode === 401) {
                   this.$router.push({ name: 'auth-login' })
                 }
               }
@@ -185,6 +185,7 @@ export default {
       <VDivider />
 
       <VList
+        v-if="channelInvitations.length > 0"
         dense
         nav
       >
