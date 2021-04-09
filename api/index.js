@@ -22,8 +22,6 @@ module.exports.connectionDB = pool;
 const app = express();
 const server = http.createServer(app);
 
-// Export express app
-module.exports = app;
 // Export http server
 //module.exports = server;
 
@@ -43,6 +41,11 @@ app.use(accounts);
 app.use(channels);
 app.use(registrationInvitations);
 app.use(messages);
+
+// Export express app
+module.exports = app;
+
+require('./messages');
 
 // Start standalone server if directly running
 if (require.main === module) {
