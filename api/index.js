@@ -45,7 +45,7 @@ app.use(messages);
 // Export express app
 module.exports = app;
 
-require('./messages');
+// require('./messages'); // todo tomdo: smazat???
 
 // Start standalone server if directly running
 if (require.main === module) {

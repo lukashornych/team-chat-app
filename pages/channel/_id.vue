@@ -2,10 +2,10 @@
 import { io } from 'socket.io-client'
 
 export default {
-  asyncData ({ redirect, $http }) {
+  async asyncData ({ redirect, route, $http }) {
     return {
-      messages: $http.$get(
-        '/api/getAllMessages',
+      messages: await $http.$get(
+        `/api/getAllMessages/${route.params.id}`,
         {
           hooks: {
             afterResponse: [
@@ -23,17 +23,16 @@ export default {
 
   data () {
     return {
-      socket: null,
+      socket: io(process.env.WS_URL),
       messages: [],
       selectedThreadId: null,
       showThreadDialog: false
     }
   },
 
-  mounted () {
-    this.socket = io(`ws://${window.location.hostname}/api/messages`)
-    this.socket.on('newMessage', function (newMessage) {
-      this.messages.push(newMessage)
+  beforeMount () {
+    this.socket.on('newMessage', (newMessage) => {
+      this.messages.unshift(newMessage)
     })
   },
 

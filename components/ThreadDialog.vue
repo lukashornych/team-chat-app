@@ -23,7 +23,7 @@ export default {
 
   fetch () {
     this.messages = this.$http.$get(
-      '/api/getAllMessages',
+      `/api/getAllMessages/${this.$route.params.id}?thread=true`,
       {
         hooks: {
           afterResponse: [
@@ -38,7 +38,7 @@ export default {
     )
   },
 
-  created () {
+  beforeMounted () {
     this.socket.on('newMessage', function (newMessage) {
       if (newMessage.threadId === this.threadId) {
         this.messages.push(newMessage)

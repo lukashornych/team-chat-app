@@ -58,7 +58,8 @@ export default {
   modules: [
     // Doc: https://http.nuxtjs.org
     '@nuxt/http',
-    'nuxt-socket-io'
+    'nuxt-socket-io',
+    '~/api/socket-io'
   ],
 
   /*
@@ -81,5 +82,9 @@ export default {
   ** See https://nuxtjs.org/api/configuration-build/
   */
   build: {
+  },
+
+  env: {
+    WS_URL: process.env.WS_URL || 'http://localhost:3000'
   }
 }
