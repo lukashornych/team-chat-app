@@ -9,7 +9,7 @@ export default {
       showNavigationDrawer: false,
       showEditChannelDialog: false,
       showChannelInvitationDialog: false,
-      selectedChannelIndex: null
+      selectedChannel: null
     }
   },
 
@@ -66,22 +66,17 @@ export default {
     }
   },
 
-  watch: {
-    selectedChannelIndex (newValue) {
-      if (newValue == null) {
-        this.$router.push({ name: 'index' })
-      } else {
-        this.$router.push({
-          name: 'channel-id',
-          params: {
-            id: this.channels[newValue].id
-          }
-        })
-      }
-    }
-  },
-
   methods: {
+    selectChannel (channel) {
+      this.selectedChannel = channel
+      this.$router.push({
+        name: 'channel-id',
+        params: {
+          id: channel.id
+        }
+      })
+    },
+
     navigateToSettings () {
       this.$router.push({ name: 'account-settings' })
     },
@@ -153,7 +148,6 @@ export default {
         nav
       >
         <VListItemGroup
-          v-model="selectedChannelIndex"
           color="primary"
         >
           <VSubheader>
@@ -163,7 +157,7 @@ export default {
           <VListItem
             v-for="channel in publicChannels"
             :key="channel.id"
-            link
+            @click="selectChannel(channel)"
           >
             <VListItemContent>
               <VListItemTitle>
@@ -179,7 +173,7 @@ export default {
           <VListItem
             v-for="channel in privateGroups"
             :key="channel.id"
-            link
+            @click="selectChannel(channel)"
           >
             <VListItemContent>
               <VListItemTitle>
@@ -266,7 +260,7 @@ export default {
       <VSpacer />
 
       <VBtn
-        v-if="($store.getters['account/isAdministrator'] || $store.getters['account/isModerator']) && (selectedChannelIndex != null)"
+        v-if="($store.getters['account/isAdministrator'] || $store.getters['account/isModerator']) && (selectedChannel != null)"
         icon
         @click="showEditChannelDialog=true"
       >
@@ -277,12 +271,12 @@ export default {
 
       <EditChannelDialog
         v-if="($store.getters['account/isAdministrator'] || $store.getters['account/isModerator']) && showEditChannelDialog"
-        :channel="channels[selectedChannelIndex]"
+        :channel="selectedChannel"
         @input="showEditChannelDialog = false; $fetch()"
       />
 
       <VBtn
-        v-if="($store.getters['account/isAdministrator'] || $store.getters['account/isModerator']) && (selectedChannelIndex != null)"
+        v-if="($store.getters['account/isAdministrator'] || $store.getters['account/isModerator']) && (selectedChannel != null)"
         icon
         @click="showChannelInvitationDialog=true"
       >
@@ -293,7 +287,7 @@ export default {
 
       <CreateChannelInvitationDialog
         v-if="($store.getters['account/isAdministrator'] || $store.getters['account/isModerator']) && showChannelInvitationDialog"
-        :channel="channels[selectedChannelIndex]"
+        :channel="selectedChannel"
         @input="showChannelInvitationDialog = false"
       />
     </VAppBar>
