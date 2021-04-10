@@ -81,8 +81,8 @@ router.post('/login', (req, res) => {
 
           const cutToken = token.split(".");
 
-          res.cookie("jwt-hs", cutToken[0]+"."+cutToken[2], { maxAge: 86400000, httpOnly: true, sameSite: "lax", secure: true });  // 1 den
-          res.cookie("jwt-payload", cutToken[1], { maxAge: 86400000, httpOnly: false, sameSite: "lax", secure: true });
+          res.cookie("jwt-hs", cutToken[0]+"."+cutToken[2], { maxAge: 86400000, httpOnly: true, sameSite: "lax" });  // 1 den
+          res.cookie("jwt-payload", cutToken[1], { maxAge: 86400000, httpOnly: false, sameSite: "lax" }); //sameSite: "lax", secure: false
 
           res.sendStatus(200);
 
@@ -106,16 +106,30 @@ router.put('/updateAccount', (req, res) => {
   authenticateToken(req, res, (authenticated) => {
     if (!authenticated) return res.sendStatus(401);
 
-    if (!req.body.name && !req.body.username && !req.body.newPassword) return res.sendStatus(400);
+    if (!req.body.name && !req.body.username && !req.body.newPassword && !req.body.role) return res.sendStatus(400);
 
     let userId = req.body.userId;
     if (!userId) userId = req.user.id;
     //TODO Uživatel a moderátor sám sebe, Administrátor ostatní
 
+    let tokenUser = req.user;
+    delete tokenUser.iat;
+    delete tokenUser.exp;
+
     let setter = [];     // SET statement creation
-    if (req.body.role) setter.push(`role='${req.body.role}'`);
-    if (req.body.name) setter.push(`name='${req.body.name}'`);
-    if (req.body.username) setter.push(`username='${req.body.username}'`);
+
+    if (req.body.role) {
+      setter.push(`role='${req.body.role}'`);
+      tokenUser.role = req.body.role;
+    }
+    if (req.body.name) {
+      setter.push(`name='${req.body.name}'`);
+      tokenUser.name = req.body.name;
+    }
+    if (req.body.username) {
+      setter.push(`username='${req.body.username}'`);
+      tokenUser.username = req.body.username;
+    }
     if (req.body.newPassword) {
       const newPasswordHash = bcrypt.hashSync(req.body.newPassword, 10);
       setter.push(`passwordHash='${newPasswordHash}'`);
@@ -124,8 +138,15 @@ router.put('/updateAccount', (req, res) => {
     pool.query(`UPDATE account SET ${setter.toString()} WHERE id='${userId}';`, function (queryError, queryResults, queryFields) {
       if (queryError) {
         console.error(queryError);
-        res.sendStatus(500);
+        return res.sendStatus(500);
       }
+
+      const token = jwt.sign(tokenUser, process.env.TOKEN_PRIVATE, {expiresIn: "24h"} ); //, {expiresIn: "1h"}
+
+      const cutToken = token.split(".");
+
+      res.cookie("jwt-hs", cutToken[0]+"."+cutToken[2], { maxAge: 86400000, httpOnly: true, sameSite: "lax" });  // 1 den
+      res.cookie("jwt-payload", cutToken[1], { maxAge: 86400000, httpOnly: false, sameSite: "lax" }); //sameSite: "lax", secure: false
 
       res.sendStatus(200);
     });
@@ -144,7 +165,7 @@ router.get('/getAllAccounts', (req, res) => {
     pool.query(`SELECT id, name, username, role FROM account;`, function (queryError, queryResults, queryFields) {
       if (queryError) {
         console.error(queryError);
-        res.sendStatus(500);
+        return res.sendStatus(500);
       }
 
       res.status(200).json(queryResults);
@@ -193,7 +214,7 @@ router.get('/detest', (req, res) => {
       pool.query('SELECT 1 + 1 AS solution', function (error, results, fields) {
         if (error) throw error;
         console.log('The solution is: ', results[0].solution);
-        res.sendStatus(200);
+        return res.sendStatus(200);
       });
     } else {
       res.sendStatus(403);

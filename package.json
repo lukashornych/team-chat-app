@@ -16,7 +16,7 @@
     "bcrypt": "^5.0.1",
     "cookie-parser": "^1.4.5",
     "dotenv": "^8.2.0",
-    "express": "^4.17.1",
+    "express": "latest",
     "jsonwebtoken": "^8.5.1",
     "mysql": "^2.18.1",
     "nuxt": "latest",
@@ -33,6 +33,7 @@
     "@nuxtjs/vuetify": "^1.11.3",
     "babel-eslint": "^10.1.0",
     "eslint": "^7.20.0",
-    "eslint-plugin-nuxt": "^2.0.0"
+    "eslint-plugin-nuxt": "^2.0.0",
+    "cors": "^2.8.5"
   }
 }

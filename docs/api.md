@@ -125,6 +125,30 @@ value: 1
 or full user objects
 
 
+### ✔ GET /getAccountPhoto/:accountId
+**➜ needs token authentication**<br/>
+**➜ role: ALL**<br/>
+
+- musí být uživatel přihlášen, role je jedno
+
+***Return:***
+```
+➜ status 200 - OK
+[
+  {
+    id: id,
+    name: name,
+    username: username,
+    role: role
+  },
+]
+➜ status 500 - Internal Server Error
+➜ status 401 - Unauthorized
+```
+
+vrátí konkrétní obrázek
+
+
 
 
 
@@ -314,11 +338,7 @@ or full user objects
 
 <i>Soubor <b>'registrationInvitations.js'</b></i>
 
-### GET /getAccountPhoto/:accountId
 
-- musí být uživatel přihlášen, role je jedno
-
-vrátí konkrétní obrázek
 
 
 ### ✔ GET /getAllRegistrationInvitations

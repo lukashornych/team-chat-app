@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 
+//TODO OVĚŘENÍ, ZDA UŽIVATEL Z TOKENU EXISTUJE!
 /**
  ** Token authentication function
  ** @param req
