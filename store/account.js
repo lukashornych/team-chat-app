@@ -12,6 +12,10 @@ export const mutations = {
   update (state, updatedUserData) {
     state.loggedInUser.name = updatedUserData.name
     state.loggedInUser.username = updatedUserData.username
+  },
+
+  logout (state) {
+    state.loggedInUser = null
   }
 }
 

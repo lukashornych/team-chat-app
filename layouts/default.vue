@@ -86,6 +86,14 @@ export default {
       this.$router.push({ name: 'account-settings' })
     },
 
+    async logout () {
+      await this.$http.$post(
+        '/api/logout'
+      )
+      this.$store.commit('account/logout')
+      this.$router.push({ name: 'auth-login' })
+    },
+
     async acceptChannelInvitation (channelInvitation) {
       await this.$http.$post(
         '/api/acceptChannelInvitation',
@@ -226,6 +234,17 @@ export default {
             @click="navigateToSettings"
           >
             Nastavení
+          </VBtn>
+        </div>
+
+        <div class="px-2 pb-2">
+          <VBtn
+            block
+            raised
+            elevation="0"
+            @click="logout"
+          >
+            Odhlásit se
           </VBtn>
         </div>
       </template>

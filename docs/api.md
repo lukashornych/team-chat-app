@@ -72,6 +72,12 @@ post - register
 ➜ status 400 - user-exists
 ```
 
+### POST /logout
+todo
+
+nic neposila
+nic nevraci
+
 ### ✔ PUT /updateAccount
 **➜ needs token authentication**<br/>
 **➜ role: ALL**<br/>
