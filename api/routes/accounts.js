@@ -99,6 +99,21 @@ router.post('/login', (req, res) => {
 
 
 /**
+ ** LOGOUT
+ **/
+router.post('/logout', (req, res) => {
+  authenticateToken(req, res, (authenticated) => {
+    if (!authenticated) return res.sendStatus(401);
+
+    res.clearCookie("jwt-hs");
+    res.clearCookie("jwt-payload");
+
+    res.sendStatus(200);
+  });
+});
+
+
+/**
  ** UPDATE ACCOUNT
  ** authenticated by token
  **/
@@ -108,8 +123,12 @@ router.put('/updateAccount', (req, res) => {
 
     if (!req.body.name && !req.body.username && !req.body.newPassword && !req.body.role) return res.sendStatus(400);
 
+    let isTokenUser = false;
     let userId = req.body.userId;
-    if (!userId) userId = req.user.id;
+    if (!userId) {
+      userId = req.user.id;
+      isTokenUser = true;
+    }
     //TODO Uživatel a moderátor sám sebe, Administrátor ostatní
 
     let tokenUser = req.user;
@@ -120,15 +139,15 @@ router.put('/updateAccount', (req, res) => {
 
     if (req.body.role) {
       setter.push(`role='${req.body.role}'`);
-      tokenUser.role = req.body.role;
+      if (isTokenUser) tokenUser.role = req.body.role;
     }
     if (req.body.name) {
       setter.push(`name='${req.body.name}'`);
-      tokenUser.name = req.body.name;
+      if (isTokenUser) tokenUser.name = req.body.name;
     }
     if (req.body.username) {
       setter.push(`username='${req.body.username}'`);
-      tokenUser.username = req.body.username;
+      if (isTokenUser) tokenUser.username = req.body.username;
     }
     if (req.body.newPassword) {
       const newPasswordHash = bcrypt.hashSync(req.body.newPassword, 10);
@@ -141,12 +160,14 @@ router.put('/updateAccount', (req, res) => {
         return res.sendStatus(500);
       }
 
-      const token = jwt.sign(tokenUser, process.env.TOKEN_PRIVATE, {expiresIn: "24h"} ); //, {expiresIn: "1h"}
+      if(isTokenUser) {
+        const token = jwt.sign(tokenUser, process.env.TOKEN_PRIVATE, {expiresIn: "24h"} ); //, {expiresIn: "1h"}
 
-      const cutToken = token.split(".");
+        const cutToken = token.split(".");
 
-      res.cookie("jwt-hs", cutToken[0]+"."+cutToken[2], { maxAge: 86400000, httpOnly: true, sameSite: "lax" });  // 1 den
-      res.cookie("jwt-payload", cutToken[1], { maxAge: 86400000, httpOnly: false, sameSite: "lax" }); //sameSite: "lax", secure: false
+        res.cookie("jwt-hs", cutToken[0]+"."+cutToken[2], { maxAge: 86400000, httpOnly: true, sameSite: "lax" });  // 1 den
+        res.cookie("jwt-payload", cutToken[1], { maxAge: 86400000, httpOnly: false, sameSite: "lax" }); //sameSite: "lax", secure: false
+      }
 
       res.sendStatus(200);
     });

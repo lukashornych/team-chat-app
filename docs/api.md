@@ -72,11 +72,20 @@ post - register
 ➜ status 400 - user-exists
 ```
 
-### POST /logout
-todo
+### ✔ POST /logout
+**➜ needs token authentication**<br/>
+
+odstraní token
 
 nic neposila
 nic nevraci
+
+***Return:***
+```
+➜ status 200 - OK
+➜ status 401 - Unauthorized
+```
+
 
 ### ✔ PUT /updateAccount
 **➜ needs token authentication**<br/>
