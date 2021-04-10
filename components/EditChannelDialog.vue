@@ -35,7 +35,7 @@ export default {
         try {
           await this.$http.$put(
             '/api/updateChannel',
-            { id: this.channel.id, name: this.channel.name, description: this.channel.description },
+            { id: this.channel.id, name: this.name, description: this.description },
             {
               hooks: {
                 afterResponse: [

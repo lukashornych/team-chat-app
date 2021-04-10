@@ -9,5 +9,3 @@ services:
       MYSQL_DATABASE: team-chat-app
     ports:
       - "33061:3306"
-    volumes:
-      - ./db/ddl.sql:/docker-entrypoint-initdb.d/init.sql

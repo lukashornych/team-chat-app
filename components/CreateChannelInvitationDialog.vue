@@ -44,7 +44,7 @@ export default {
         '/api/createChannelInvitation',
         {
           channelId: this.channel.id,
-          userIds: this.selectedUsers.map(u => u.value)
+          userIds: this.selectedUsers
         },
         {
           hooks: {

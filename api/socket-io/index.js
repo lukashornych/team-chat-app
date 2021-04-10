@@ -1,6 +1,18 @@
+require('dotenv').config({ path: __dirname + '/../../.env' });
+
 const http = require('http');
 const socket = require('socket.io');
-const pool = require('../index').connectionDB;
+const mysql = require('mysql');
+
+// Database connection pool
+const pool = mysql.createPool({
+  connectionLimit : 10,
+  host            : process.env.DB_HOST,
+  port            : process.env.DB_PORT,
+  user            : process.env.DB_USER,
+  password        : process.env.DB_PASSWORD,
+  database        : process.env.DB_DATABASE
+});
 
 
 export default function() {
@@ -20,24 +32,26 @@ export default function() {
         let threadId = message.threadId;
         if (!threadId) threadId = null;
 
-        pool.query(`CALL insertMessage(${message.channelId}, ${threadId}, '${message.creatorId}', '${message.content}');`, function (queryError, queryResults, queryFields) {
+        pool.query(`CALL insertMessage(${message.channelId}, ${threadId}, ${message.creatorId}, '${message.content}');`, function (queryError, queryResults, queryFields) {
           if (queryError) {
             return console.error(queryError);
           }
 
+          console.log(queryResults)
+
           const emit = {
-            "id" : queryResults[0].messageId,
-            "threadId" : queryResults[0].threadId,
+            "id" : queryResults[0][0].messageId,
+            "threadId" : queryResults[0][0].threadId,
             "creator" : {
-              "id" : queryResults[0].messageId,
-              "name" : queryResults[0].name,
-              "username" : queryResults[0].username
+              "id" : queryResults[0][0].messageId,
+              "name" : queryResults[0][0].name,
+              "username" : queryResults[0][0].username
             },
-            "created" : queryResults[0].created,
-            "content" : queryResults[0].content
+            "created" : queryResults[0][0].created,
+            "content" : queryResults[0][0].content
           };
 
-          socket.emit('newMessage', emit);
+          io.emit('newMessage', emit);
         });
 
       });

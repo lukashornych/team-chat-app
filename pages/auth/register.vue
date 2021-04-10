@@ -25,7 +25,7 @@ export default {
       minLength: minLength(5)
     },
     password: {
-      minLength: minLength(12)
+      minLength: minLength(8)
     }
   },
 
@@ -90,22 +90,42 @@ export default {
       label="Kód pozvánky*"
       outlined
     />
+    <p
+      v-if="$v.code.$error"
+    >
+      Kód pozvánky je povinný
+    </p>
     <VTextField
       v-model="name"
       label="Zobrazované jméno*"
       outlined
     />
+    <p
+      v-if="$v.name.$error"
+    >
+      Zobrazované jméno je povinné
+    </p>
     <VTextField
       v-model="username"
       label="Uživatelské jméno*"
       outlined
     />
+    <p
+      v-if="$v.username.$error"
+    >
+      Uživatelské jméno je povinné
+    </p>
     <VTextField
       v-model="password"
       label="Heslo*"
       outlined
       type="password"
     />
+    <p
+      v-if="$v.password.$error"
+    >
+      Heslo musí mít alespoň 8 znaků
+    </p>
 
     <VBtn @click="$router.push({ name: 'auth-login' })">
       Přihlásit se

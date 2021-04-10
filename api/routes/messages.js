@@ -28,7 +28,7 @@ router.get('/getAllMessages/:id', (req, res) => {
                 `FROM channel ch JOIN thread t ON t.channelId=ch.id `+
                 `JOIN message m ON m.threadId=t.id ` +
                 `JOIN account a ON m.creatorId=a.id ` +
-                `${dotaz} ORDER BY m.threadId, m.created ASC;`, function (queryError, queryResults, queryFields) {
+                `${dotaz} ORDER BY m.id DESC;`, function (queryError, queryResults, queryFields) {
       if (queryError) {
         console.error(queryError);
         return res.sendStatus(500);
@@ -40,7 +40,7 @@ router.get('/getAllMessages/:id', (req, res) => {
           "id" : result.messageId,
           "threadId" : result.threadId,
           "creator" : {
-            "id" : result.messageId,
+            "id" : result.accountId,
             "name" : result.name,
             "username" : result.username
           },

@@ -86,11 +86,19 @@ export default {
       this.$router.push({ name: 'account-settings' })
     },
 
+    async logout () {
+      await this.$http.$post(
+        '/api/logout'
+      )
+      this.$store.commit('account/logout')
+      this.$router.push({ name: 'auth-login' })
+    },
+
     async acceptChannelInvitation (channelInvitation) {
       await this.$http.$post(
         '/api/acceptChannelInvitation',
         {
-          userId: channelInvitation.userId,
+          userId: channelInvitation.accountId,
           channelId: channelInvitation.id
         },
         {
@@ -200,7 +208,7 @@ export default {
         >
           <VListItemContent>
             <VListItemTitle>
-              {{ channelInvitation.channelName }}
+              {{ channelInvitation.name }}
             </VListItemTitle>
           </VListItemContent>
         </VListItem>
@@ -228,6 +236,17 @@ export default {
             Nastavení
           </VBtn>
         </div>
+
+        <div class="px-2 pb-2">
+          <VBtn
+            block
+            raised
+            elevation="0"
+            @click="logout"
+          >
+            Odhlásit se
+          </VBtn>
+        </div>
       </template>
     </VNavigationDrawer>
 
@@ -247,7 +266,7 @@ export default {
       <VSpacer />
 
       <VBtn
-        v-if="selectedChannelIndex != null"
+        v-if="($store.getters['account/isAdministrator'] || $store.getters['account/isModerator']) && (selectedChannelIndex != null)"
         icon
         @click="showEditChannelDialog=true"
       >
@@ -263,7 +282,7 @@ export default {
       />
 
       <VBtn
-        v-if="selectedChannelIndex != null"
+        v-if="($store.getters['account/isAdministrator'] || $store.getters['account/isModerator']) && (selectedChannelIndex != null)"
         icon
         @click="showChannelInvitationDialog=true"
       >
