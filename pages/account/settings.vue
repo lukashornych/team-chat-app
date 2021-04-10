@@ -28,7 +28,7 @@ export default {
         minLength: minLength(5)
       },
       newPassword: {
-        minLength: minLength(12)
+        minLength: minLength(8)
       }
     }
   },
@@ -64,7 +64,6 @@ export default {
           }
         }
       )
-      this.users.splice(this.users.findIndex(u => u.id === this.$store.state.account.loggedInUser.is), 1)
     }
   },
 
@@ -104,6 +103,8 @@ export default {
             }
           }
         )
+
+        this.$store.commit('account/update', { name: this.account.name, username: this.account.username })
       }
     },
 
@@ -179,17 +180,32 @@ export default {
         label="Jméno"
         outlined
       />
+      <p
+        v-if="$v.account.name.$error"
+      >
+        Jméno je povinné
+      </p>
       <VTextField
         v-model="account.username"
         label="Uživatelské jméno"
         outlined
       />
+      <p
+        v-if="$v.account.username.$error"
+      >
+        Uživatelské jméno je povinné
+      </p>
       <VTextField
         v-model="account.newPassword"
         label="Nové heslo"
         outlined
         type="password"
       />
+      <p
+        v-if="$v.account.newPassword.$error"
+      >
+        Nové heslo musí mít alespoň 8 znaků
+      </p>
 
       <VFileInput
         label="Nová fotografie"

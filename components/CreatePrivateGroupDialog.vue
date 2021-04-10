@@ -19,7 +19,7 @@ export default {
         }
       }
     )
-    users.splice(this.users.findIndex(u => u.id === this.$store.state.account.loggedInUser.is), 1)
+    users.splice(users.findIndex(u => u.id === this.$store.state.account.loggedInUser.id), 1)
     this.selectableUsers = users.map(u => ({ text: u.name, value: u.id }))
   },
 
@@ -38,6 +38,15 @@ export default {
     name: {
       required,
       minLength: minLength(3)
+    }
+  },
+
+  watch: {
+    async showCreatePrivateGroupDialog (val) {
+      if (val === false) {
+        return
+      }
+      await this.$fetch()
     }
   },
 
@@ -62,7 +71,7 @@ export default {
               type: 'PRIVATE_GROUP',
               name: this.name,
               description: this.description,
-              userIds: this.users.map(u => u.id)
+              userIds: this.users
             },
             {
               hooks: {

@@ -15,7 +15,7 @@ router.get('/getAllRegistrationInvitations', (req, res) => {
   authenticateToken(req, res, (authenticated) => {
     if (!authenticated) return res.sendStatus(401);
 
-    pool.query(`SELECT id, code, accepted  FROM registrationInvitation;`, function (queryError, queryResults, queryFields) {
+    pool.query(`SELECT id, code, accepted  FROM registrationInvitation where accepted = false;`, function (queryError, queryResults, queryFields) {
       if (queryError) {
         console.error(queryError);
         res.sendStatus(500);

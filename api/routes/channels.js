@@ -27,7 +27,7 @@ router.post('/createChannel', (req, res) => {
 
     if (description) {
       insert += ", description";
-      insertValues += `, '${type}'`;
+      insertValues += `, '${description}'`;
     }
 
     // 2nd insert inputs
@@ -126,8 +126,8 @@ router.get('/getChannels', (req, res) => {
 
     const id = req.user.id;
 
-    pool.query(`SELECT ch.id, ch.name, ch.description, ch.type FROM channel ch JOIN accountInChannel aich  ON ch.id=aich.channelId WHERE aich.accountId='${id}' UNION
-    SELECT id, name, description, type FROM channel WHERE type='PUBLIC_CHANNEL';`, function (queryError, queryResults, queryFields) {
+    pool.query(`SELECT ch.id, ch.name, ch.description, ch.type FROM channel ch JOIN accountInChannel aich  ON ch.id=aich.channelId WHERE aich.accountId='${id}';`,
+      function (queryError, queryResults, queryFields) {
       if (queryError) {
         console.error(queryError);
         return res.sendStatus(500);
@@ -150,7 +150,7 @@ router.get('/getChannelInvitations', (req, res) => {
 
     const id = req.user.id;
 
-    pool.query(`SELECT ch.id, ch.name  FROM channel ch JOIN channelInvitation chi ON ch.id=chi.channelId WHERE chi.accountId='${id}' AND accepted='0';`, function (queryError, queryResults, queryFields) {
+    pool.query(`SELECT ch.id, ch.name, chi.accountId  FROM channel ch JOIN channelInvitation chi ON ch.id=chi.channelId WHERE chi.accountId='${id}' AND accepted='0';`, function (queryError, queryResults, queryFields) {
       if (queryError) {
         console.error(queryError);
         return res.sendStatus(500);

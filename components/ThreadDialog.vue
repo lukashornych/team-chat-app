@@ -10,38 +10,11 @@ export default {
     threadId: {
       type: Number,
       required: true
+    },
+    messages: {
+      type: Array,
+      required: true
     }
-  },
-
-  data () {
-    return {
-      messages: []
-    }
-  },
-
-  async fetch () {
-    this.messages = await this.$http.$get(
-      `/api/getAllMessages/${this.$route.params.id}?thread=true`,
-      {
-        hooks: {
-          afterResponse: [
-            (req, opt, res) => {
-              if (res.statusCode === 401) {
-                this.$router.push({ name: 'auth-login' })
-              }
-            }
-          ]
-        }
-      }
-    )
-  },
-
-  beforeMount () {
-    this.socket.on('newMessage', function (newMessage) {
-      if (newMessage.threadId === this.threadId) {
-        this.messages.unshift(newMessage)
-      }
-    })
   }
 }
 </script>

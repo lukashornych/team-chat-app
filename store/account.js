@@ -7,6 +7,11 @@ export const state = () => ({
 export const mutations = {
   login (state, user) {
     state.loggedInUser = user
+  },
+
+  update (state, updatedUserData) {
+    state.loggedInUser.name = updatedUserData.name
+    state.loggedInUser.username = updatedUserData.username
   }
 }
 

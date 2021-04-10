@@ -26,6 +26,7 @@ export default {
       socket: io(process.env.WS_URL),
       messages: [],
       selectedThreadId: null,
+      selectedThreadMessages: [],
       showThreadDialog: false
     }
   },
@@ -33,12 +34,31 @@ export default {
   beforeMount () {
     this.socket.on('newMessage', (newMessage) => {
       this.messages.unshift(newMessage)
+
+      if ((this.selectedThreadId != null) && (newMessage.threadId === this.selectedThreadId)) {
+        this.selectedThreadMessages.unshift(newMessage)
+      }
     })
   },
 
   methods: {
-    showThread (message) {
+    async showThread (message) {
       this.selectedThreadId = message.threadId
+      this.selectedThreadMessages = await this.$http.$get(
+        `/api/getAllMessages/${this.selectedThreadId}?thread=true`,
+        {
+          hooks: {
+            afterResponse: [
+              (req, opt, res) => {
+                if (res.statusCode === 401) {
+                  this.$router.push({ name: 'auth-login' })
+                }
+              }
+            ]
+          }
+        }
+      )
+
       this.showThreadDialog = true
     }
   }
@@ -78,6 +98,7 @@ export default {
       v-if="showThreadDialog"
       :socket="socket"
       :thread-id="selectedThreadId"
+      :messages="selectedThreadMessages"
       @input="showThreadDialog = false"
     />
   </div>

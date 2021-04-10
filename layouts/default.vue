@@ -90,7 +90,7 @@ export default {
       await this.$http.$post(
         '/api/acceptChannelInvitation',
         {
-          userId: channelInvitation.userId,
+          userId: channelInvitation.accountId,
           channelId: channelInvitation.id
         },
         {
@@ -200,7 +200,7 @@ export default {
         >
           <VListItemContent>
             <VListItemTitle>
-              {{ channelInvitation.channelName }}
+              {{ channelInvitation.name }}
             </VListItemTitle>
           </VListItemContent>
         </VListItem>
@@ -247,7 +247,7 @@ export default {
       <VSpacer />
 
       <VBtn
-        v-if="selectedChannelIndex != null"
+        v-if="($store.getters['account/isAdministrator'] || $store.getters['account/isModerator']) && (selectedChannelIndex != null)"
         icon
         @click="showEditChannelDialog=true"
       >
@@ -263,7 +263,7 @@ export default {
       />
 
       <VBtn
-        v-if="selectedChannelIndex != null"
+        v-if="($store.getters['account/isAdministrator'] || $store.getters['account/isModerator']) && (selectedChannelIndex != null)"
         icon
         @click="showChannelInvitationDialog=true"
       >
