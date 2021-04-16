@@ -2,6 +2,7 @@ const { Router } = require('express');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const pool = require('../index').connectionDB;
+const promisePool = pool.promise();
 const authenticateToken = require('../authenticateToken');
 
 const router = Router();
@@ -26,7 +27,7 @@ router.post('/register', (req, res) => {
 
     pool.query(`CALL registerAccount('${code}', '${username}', '${name}', '${hash}');`, function (queryError, queryResults, queryFields) {
       if (queryError) {
-        console.error(queryError);
+        console.error("\n\x1b[31mQuery error! \x1b[0m\x1b[32m" + queryError.code + "\x1b[0m\n" + queryError.sqlMessage);
         return res.sendStatus(500);
       }
 
@@ -58,7 +59,7 @@ router.post('/login', (req, res) => {
 
   pool.query(`SELECT * FROM account WHERE username='${username}';`, function (queryError, queryResults, queryFields) {
     if (queryError) {
-      console.error(queryError);
+      console.error("\n\x1b[31mQuery error! \x1b[0m\x1b[32m" + queryError.code + "\x1b[0m\n" + queryError.sqlMessage);
       return res.sendStatus(500);
     }
 
@@ -116,12 +117,19 @@ router.post('/logout', (req, res) => {
 /**
  ** UPDATE ACCOUNT
  ** authenticated by token
+ **
+ ** Only ADMIN can update roles and other accounts.
  **/
 router.put('/updateAccount', (req, res) => {
-  authenticateToken(req, res, (authenticated) => {
+  authenticateToken(req, res, async (authenticated) => {
     if (!authenticated) return res.sendStatus(401);
 
     if (!req.body.name && !req.body.username && !req.body.newPassword && !req.body.role) return res.sendStatus(400);
+
+    // Je ADMIN -> může editovat role
+    //          -> může editovat cizí účty
+    if (req.user.role !== "ADMIN" && req.body.userId) return res.sendStatus(403);
+    if (req.user.role !== "ADMIN" && req.body.role) return res.sendStatus(403);
 
     let isTokenUser = false;
     let userId = req.body.userId;
@@ -129,7 +137,6 @@ router.put('/updateAccount', (req, res) => {
       userId = req.user.id;
       isTokenUser = true;
     }
-    //TODO Uživatel a moderátor sám sebe, Administrátor ostatní
 
     let tokenUser = req.user;
     delete tokenUser.iat;
@@ -146,6 +153,10 @@ router.put('/updateAccount', (req, res) => {
       if (isTokenUser) tokenUser.name = req.body.name;
     }
     if (req.body.username) {
+      // If username exists return 409 - Conflict
+      const usernameExists = await promisePool.query(`SELECT COUNT(*) AS count FROM account WHERE username='${req.body.username}';`);
+      if (usernameExists[0][0].count !== 0) return res.sendStatus(409);
+
       setter.push(`username='${req.body.username}'`);
       if (isTokenUser) tokenUser.username = req.body.username;
     }
@@ -156,7 +167,7 @@ router.put('/updateAccount', (req, res) => {
 
     pool.query(`UPDATE account SET ${setter.toString()} WHERE id='${userId}';`, function (queryError, queryResults, queryFields) {
       if (queryError) {
-        console.error(queryError);
+        console.error("\n\x1b[31mQuery error! \x1b[0m\x1b[32m" + queryError.code + "\x1b[0m\n" + queryError.sqlMessage);
         return res.sendStatus(500);
       }
 
@@ -185,7 +196,7 @@ router.get('/getAllAccounts', (req, res) => {
 
     pool.query(`SELECT id, name, username, role FROM account;`, function (queryError, queryResults, queryFields) {
       if (queryError) {
-        console.error(queryError);
+        console.error("\n\x1b[31mQuery error! \x1b[0m\x1b[32m" + queryError.code + "\x1b[0m\n" + queryError.sqlMessage);
         return res.sendStatus(500);
       }
 
@@ -260,7 +271,7 @@ router.post('/createAdmin', (req, res) => {
 
     pool.query(`INSERT INTO account (username, name, passwordHash, role) values ('${req.body.username}', 'ADMIN', '${hash}', 'ADMIN');`, function (queryError, results, fields) {
       if (queryError) {
-        console.error(queryError);
+        console.error("\n\x1b[31mQuery error! \x1b[0m\x1b[32m" + queryError.code + "\x1b[0m\n" + queryError.sqlMessage);
         return res.sendStatus(500);
       }
       res.sendStatus(201);

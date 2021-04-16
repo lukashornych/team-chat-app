@@ -18,7 +18,7 @@
     "dotenv": "^8.2.0",
     "express": "latest",
     "jsonwebtoken": "^8.5.1",
-    "mysql": "^2.18.1",
+    "mysql2": "^2.2.5",
     "nuxt": "latest",
     "nuxt-socket-io": "^1.1.14",
     "socket.io": "^4.0.0",

@@ -2,9 +2,7 @@ require('dotenv').config({ path: __dirname + '/../../.env' });
 
 const http = require('http');
 const socket = require('socket.io');
-const mysql = require('mysql');
-
-// Database connection pool
+const mysql = require('mysql2');
 const pool = mysql.createPool({
   connectionLimit : 10,
   host            : process.env.DB_HOST,
@@ -25,6 +23,8 @@ export default function() {
     // close this server on 'close' event
     this.nuxt.hook('close', () => new Promise(server.close));
 
+
+
     // Add socket.io events
     io.on('connection', (socket) => {
 
@@ -34,10 +34,8 @@ export default function() {
 
         pool.query(`CALL insertMessage(${message.channelId}, ${threadId}, ${message.creatorId}, '${message.content}');`, function (queryError, queryResults, queryFields) {
           if (queryError) {
-            return console.error(queryError);
+            return console.error("\n\x1b[31mQuery error! \x1b[0m\x1b[32m" + queryError.code + "\x1b[0m\n" + queryError.sqlMessage);
           }
-
-          console.log(queryResults)
 
           const emit = {
             "id" : queryResults[0][0].messageId,

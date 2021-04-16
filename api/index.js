@@ -4,7 +4,7 @@ const http = require('http');
 const express = require('express');
 const cookieParser = require('cookie-parser');
 const jwt = require('jsonwebtoken');
-const mysql = require('mysql');
+const mysql = require('mysql2');
 const cors = require('cors')
 
 // Database connection pool

@@ -173,3 +173,59 @@ ELSE
 END IF;
 END;
 $$ DELIMITER ;
+
+
+
+-- FUNCTIONS
+
+DELIMITER $$
+CREATE FUNCTION isInChannel (in_account INT, in_channel INT)
+	RETURNS BOOLEAN
+	READS SQL DATA
+	DETERMINISTIC
+    BEGIN
+		DECLARE isInChannelDecl INT;
+        SELECT count(*) INTO isInChannelDecl FROM accountInChannel WHERE accountId=in_account AND channelId=in_channel;
+
+        IF isInChannelDecl = 0 THEN
+			RETURN false;
+		ELSE
+            RETURN true;
+        END IF;
+    END;
+$$ DELIMITER ;
+
+
+DELIMITER $$
+CREATE FUNCTION isInThread (in_account INT, in_thread INT)
+	RETURNS BOOLEAN
+	READS SQL DATA
+	DETERMINISTIC
+    BEGIN
+		DECLARE isInThreadDecl INT;
+		SELECT COUNT(*) INTO isInThreadDecl FROM accountInChannel aic JOIN thread t ON aic.channelId=t.channelId WHERE t.id=in_thread AND aic.accountId=in_account;
+        IF isInThreadDecl != 0 THEN
+			RETURN true;
+		ELSE
+            RETURN false;
+		END IF;
+    END;
+$$ DELIMITER ;
+
+
+--DELIMITER $$
+--CREATE FUNCTION isInThreadOrChannel (in_account INT, in_channel INT, in_thread INT)
+--	RETURNS INT
+--	READS SQL DATA
+--	DETERMINISTIC
+--    BEGIN
+--		DECLARE output INT;
+--		IF in_thread IS NULL THEN
+--			SELECT COUNT(*) INTO output FROM accountInChannel WHERE accountId=in_account AND channelId=in_channel AND accountId=in_account;
+--            RETURN output;
+--		ELSE
+--			SELECT COUNT(*) INTO output FROM accountInChannel aic JOIN thread t ON aic.channelId=t.channelId WHERE t.id=in_thread AND aic.accountId=in_account;
+--            RETURN output;
+--	    END IF;
+--    END;
+--$$ DELIMITER ;

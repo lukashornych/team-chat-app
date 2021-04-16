@@ -89,7 +89,7 @@ nic nevraci
 
 ### ✔ PUT /updateAccount
 **➜ needs token authentication**<br/>
-**➜ role: ALL**<br/>
+**➜ roles: ALL**<br/>
 Pouze admin může změnit role!
 
 put - update user account
@@ -110,11 +110,14 @@ put - update user account
 ➜ status 500 - Internal Server Error
 ➜ status 400 - Bad Request
 ➜ status 401 - Unauthorized
+➜ status 403 - Forbidden
+➜ status 409 - Conflict
 ```
 
 
 ### ✔ GET /getAllAccounts
 **➜ needs token authentication**<br/>
+**➜ roles: ALL**<br/>
 
 get - list of all users
 
@@ -139,10 +142,10 @@ value: 1
 }
 or full user objects
 
-
+// TODO
 ### ✔ GET /getAccountPhoto/:accountId
 **➜ needs token authentication**<br/>
-**➜ role: ALL**<br/>
+**➜ roles: ALL**<br/>
 
 - musí být uživatel přihlášen, role je jedno
 
@@ -200,6 +203,7 @@ return
 ➜ status 500 - Internal Server Error
 ➜ status 400 - Bad Request
 ➜ status 401 - Unauthorized
+➜ status 403 - Forbidden
 ```
 
 ### ✔ PUT /updateChannel
@@ -224,6 +228,7 @@ put - edit channel/group
 ➜ status 500 - Internal Server Error
 ➜ status 400 - Bad Request
 ➜ status 401 - Unauthorized
+➜ status 403 - Forbidden
 ```
 
 ### ✔ GET /getChannels
@@ -288,13 +293,13 @@ post - accept channel invitation
 ➜ status 200 - OK
 ➜ status 500 - Internal Server Error
 ➜ status 400 - Bad Request
-➜ status 403 - Forbidden
 ➜ status 401 - Unauthorized
+➜ status 403 - Forbidden
 ```
 
 ### ✔ POST /createChannelInvitation
 **➜ needs token authentication**<br/>
-**➜ role: ALL**<br/>
+**➜ role: ALL, must be in channel**<br/>
 Moderator, Admin - PUBLIC_CHANNEL<br/>
 ALL - PRIVATE_CHANNEL<br/>
 ...OVĚŘIT, ZDA JE V CHANNELU<br/>
@@ -413,8 +418,7 @@ post - generate new registration invitation
 
 ### ✔ GET /getAllMessages/:channelId
 **➜ needs token authentication**<br/>
-**➜ role: ALL**<br/>
-...OVĚŘIT, ZDA JE V CHANNELU<br/>
+**➜ role: ALL, must be in channel**<br/>
 
 get - list of all messages
 
@@ -481,3 +485,9 @@ event name = `newMessage`
 ### emit new message
 event name = `newMessage`
 return full user object
+
+
+
+
+//TODO vyřešit problém, kdy při změně účtu jiným člověkem je potřeba aktualizovat
+token u člověka, který se změnil

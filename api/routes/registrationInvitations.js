@@ -15,9 +15,12 @@ router.get('/getAllRegistrationInvitations', (req, res) => {
   authenticateToken(req, res, (authenticated) => {
     if (!authenticated) return res.sendStatus(401);
 
+    // only ADMIN can see registration invitation
+    if (req.user.role !== "ADMIN") return res.sendStatus(403);
+
     pool.query(`SELECT id, code, accepted  FROM registrationInvitation where accepted = false;`, function (queryError, queryResults, queryFields) {
       if (queryError) {
-        console.error(queryError);
+        console.error("\n\x1b[31mQuery error! \x1b[0m\x1b[32m" + queryError.code + "\x1b[0m\n" + queryError.sqlMessage);
         res.sendStatus(500);
       }
 
@@ -35,6 +38,9 @@ router.post('/generateRegistrationInvitation', (req, res) => {
   authenticateToken(req, res, (authenticated) => {
     if (!authenticated) return res.sendStatus(401);
 
+    // only ADMIN can create registration invitation
+    if (req.user.role !== "ADMIN") return res.sendStatus(403);
+
     const amount = req.body.amount;
 
     let insert = `('${generateString(10)}')`;
@@ -50,7 +56,7 @@ router.post('/generateRegistrationInvitation', (req, res) => {
 
     pool.query(`INSERT INTO registrationInvitation(code) VALUES ${insert};`, function (queryError, queryResults, queryFields) {
       if (queryError) {
-        console.error(queryError);
+        console.error("\n\x1b[31mQuery error! \x1b[0m\x1b[32m" + queryError.code + "\x1b[0m\n" + queryError.sqlMessage);
         res.sendStatus(500);
       }
 
