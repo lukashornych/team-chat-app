@@ -268,3 +268,8 @@ $$ DELIMITER ;
 --	    END IF;
 --    END;
 --$$ DELIMITER ;
+
+
+-- VIEWS
+CREATE VIEW allAccounts AS
+SELECT id, name, username, role FROM account;
