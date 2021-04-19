@@ -101,7 +101,8 @@ put - update user account
   name: 'Name,            // OPTIONAL, at least 1 of folowing
   username: 'username',   // OPTIONAL, at least 1 of folowing
   newPassword: ':)',      // OPTIONAL, at least 1 of folowing
-  role: 'MODERATOR'       // OPTIONAL, at least 1 of folowing
+  role: 'MODERATOR',       // OPTIONAL, at least 1 of folowing
+  newPhoto: 'base64 photo'
 }
 ```
 ***Return:***
@@ -152,14 +153,7 @@ or full user objects
 ***Return:***
 ```
 ➜ status 200 - OK
-[
-  {
-    id: id,
-    name: name,
-    username: username,
-    role: role
-  },
-]
+    + photo
 ➜ status 500 - Internal Server Error
 ➜ status 401 - Unauthorized
 ```

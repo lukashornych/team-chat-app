@@ -72,7 +72,19 @@ CREATE TABLE message (
     constraint cnfk_message_creator foreign key (creatorId) references account (id)
 );
 
+CREATE TABLE photo (
+  id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+  data BLOB NOT NULL,
+  created TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+ );
 
+CREATE TABLE accountInPhoto (
+  accountId INT,
+  photoId INT,
+  PRIMARY KEY (accountId, photoId),
+  constraint cnfk_accountInPhoto_account foreign key (accountId) references account (id),
+  constraint cnfk_accountInPhoto_photo foreign key (photoId) references photo (id)
+);
 
 
 -- TRIGGERS
@@ -86,6 +98,7 @@ begin
     end if;
 end;$$
 DELIMITER ;
+
 
 DELIMITER $$
 create trigger acceptChannelInvitation
@@ -102,11 +115,11 @@ DELIMITER ;
 
 -- PROCEDURES
 DELIMITER $$
--- passwordHash using bcrypt with 12 salt rounds
-create procedure createAdminAccount(in username varchar(50), in `name` varchar(100), in passwordHash varchar(512))
+-- passwordHash using bcrypt with 10 salt rounds
+create procedure createAdminAccount(IN in_password VARCHAR(512))
 begin
     INSERT INTO account (username, name, passwordHash, role)
-    values (username, name, passwordHash, 'ADMIN');
+    VALUE ('admin', 'Administrator', in_password, 'ADMIN');
 end;$$
 DELIMITER ;
 
@@ -171,6 +184,32 @@ ELSE
 	INSERT INTO message(threadId, creatorId, content) VALUE (in_threadId, in_creatorId, in_content);
 	SELECT m.id AS messageId, m.threadId, m.created, m.content, a.id AS accountId, a.name, a.username FROM message m JOIN account a ON m.creatorId=a.id WHERE m.id=last_insert_id();
 END IF;
+END;
+$$ DELIMITER ;
+
+
+DELIMITER $$
+CREATE PROCEDURE addAccountPhoto (in_account INT, IN in_photo BLOB)
+BEGIN
+	DECLARE photoExists INT;
+  DECLARE userHasPhoto INT;
+  DECLARE photoId INT;
+
+	SELECT COUNT(*) INTO photoExists FROM photo WHERE data=in_photo;
+  SELECT COUNT(*) INTO userHasPhoto FROM accountInPhoto WHERE accountId=in_account;
+
+  IF photoExists = 0 THEN
+		INSERT INTO photo (data) VALUE (in_photo);
+    SELECT last_insert_id() INTO photoId;
+	ELSE
+		SELECT id INTO photoId FROM photo WHERE data=in_photo;
+	END IF;
+
+	IF userHasPhoto = 0 THEN
+		INSERT INTO accountInPhoto (accountId, photoId) VALUE (in_account, photoId);
+	ELSE
+		UPDATE accountInPhoto SET photoId=photoId WHERE accountId=in_account;
+  END IF;
 END;
 $$ DELIMITER ;
 

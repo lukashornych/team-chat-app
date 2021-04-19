@@ -4,8 +4,12 @@ const jwt = require('jsonwebtoken');
 const pool = require('../index').connectionDB;
 const promisePool = pool.promise();
 const authenticateToken = require('../authenticateToken');
+const base64 = require('base64-js');
 
 const router = Router();
+
+let photo = null;
+
 
 
 /**
@@ -124,7 +128,7 @@ router.put('/updateAccount', (req, res) => {
   authenticateToken(req, res, async (authenticated) => {
     if (!authenticated) return res.sendStatus(401);
 
-    if (!req.body.name && !req.body.username && !req.body.newPassword && !req.body.role) return res.sendStatus(400);
+    if (!req.body.name && !req.body.username && !req.body.newPassword && !req.body.role && !req.body.newPhoto) return res.sendStatus(400);
 
     // Je ADMIN -> může editovat role
     //          -> může editovat cizí účty
@@ -165,22 +169,59 @@ router.put('/updateAccount', (req, res) => {
       setter.push(`passwordHash='${newPasswordHash}'`);
     }
 
-    pool.query(`UPDATE account SET ${setter.toString()} WHERE id='${userId}';`, function (queryError, queryResults, queryFields) {
-      if (queryError) {
-        console.error("\n\x1b[31mQuery error! \x1b[0m\x1b[32m" + queryError.code + "\x1b[0m\n" + queryError.sqlMessage);
+    // DB TRANSACTION
+    pool.getConnection(function (connectionError, connection) {  // DB connection from pool
+      if (connectionError) {
+        console.error("\n\x1b[31mQuery error! \x1b[0m\x1b[32m" + connectionError.code + "\x1b[0m\n" + connectionError.sqlMessage);
         return res.sendStatus(500);
       }
 
-      if(isTokenUser) {
-        const token = jwt.sign(tokenUser, process.env.TOKEN_PRIVATE, {expiresIn: "24h"} ); //, {expiresIn: "1h"}
+      connection.beginTransaction(function (transactionError) { // BEGIN TRANSACTION
+        if (transactionError) {
+          console.error("\n\x1b[31mQuery transaction error! \x1b[0m\x1b[32m" + transactionError.code + "\x1b[0m\n" + transactionError.sqlMessage);
+          return res.sendStatus(500);
+        }
 
-        const cutToken = token.split(".");
+        // Pokud existuje name || username || newPassword || role
+        if (req.body.name || req.body.username || req.body.newPassword || req.body.role) {
+          connection.query(`UPDATE account SET ${setter.toString()} WHERE id='${userId}';`, function (queryError, queryResults, queryFields) {
+            if (queryError) {
+              console.error("\n\x1b[31mQuery error! \x1b[0m\x1b[32m" + queryError.code + "\x1b[0m\n" + queryError.sqlMessage);
+              return res.sendStatus(500);
+            }
 
-        res.cookie("jwt-hs", cutToken[0]+"."+cutToken[2], { maxAge: 86400000, httpOnly: true, sameSite: "lax" });  // 1 den
-        res.cookie("jwt-payload", cutToken[1], { maxAge: 86400000, httpOnly: false, sameSite: "lax" }); //sameSite: "lax", secure: false
-      }
+            if(isTokenUser) {
+              const token = jwt.sign(tokenUser, process.env.TOKEN_PRIVATE, {expiresIn: "24h"} ); //, {expiresIn: "1h"}
 
-      res.sendStatus(200);
+              const cutToken = token.split(".");
+
+              res.cookie("jwt-hs", cutToken[0]+"."+cutToken[2], { maxAge: 86400000, httpOnly: true, sameSite: "lax" });  // 1 den
+              res.cookie("jwt-payload", cutToken[1], { maxAge: 86400000, httpOnly: false, sameSite: "lax" }); //sameSite: "lax", secure: false
+            }
+          });
+        }
+
+        // Pokud existuje newPhoto
+        if (req.body.newPhoto) {
+          connection.query(`CALL addAccountPhoto (${userId}, '${req.body.newPhoto}');`, function (queryError, queryResults, queryFields) {
+            if (queryError) {
+              console.error("\n\x1b[31mQuery error! \x1b[0m\x1b[32m" + queryError.code + "\x1b[0m\n" + queryError.sqlMessage);
+              return res.sendStatus(500);
+            }
+          });
+        }
+
+        connection.commit(function (commitError) {  // COMMIT TRANSACTION
+          if (commitError) {
+            return connection.rollback(function () {
+              console.error("\n\x1b[31mQuery commit error! \x1b[0m\x1b[32m" + commitError.code + "\x1b[0m\n" + commitError.sqlMessage);
+              return res.sendStatus(500);
+            });
+          }
+
+          res.sendStatus(200);
+        });
+      });
     });
   });
 });
@@ -206,58 +247,50 @@ router.get('/getAllAccounts', (req, res) => {
 });
 
 
-module.exports = router;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 /**
- ** DEBUG SECTION
+ ** GET ACCOUNT PHOTO
+ ** authenticated by token
  **/
-
-// DEBUG Verify Token
-router.get('/verifytoken/:token', (req, res) => {
-  jwt.verify(req.params.token, process.env.TOKEN_PRIVATE, (verifyError, user) => { // DEBUG
-    if (verifyError) {
-      console.error("invalid signature");
-      return res.sendStatus(401);
-    }
-    console.log(user);
-    res.sendStatus(200);
-  });
-});
-
-
-// DEBUG Test DB Connection
-router.get('/detest', (req, res) => {
+router.get('/getAccountPhoto/:id', (req, res) => {
   authenticateToken(req, res, (authenticated) => {
-    if(authenticated) {
-      pool.query('SELECT 1 + 1 AS solution', function (error, results, fields) {
-        if (error) throw error;
-        console.log('The solution is: ', results[0].solution);
-        return res.sendStatus(200);
-      });
-    } else {
-      res.sendStatus(403);
-    }
+    if (!authenticated) return res.sendStatus(401);
+
+    const id = req.params.id;
+
+    pool.query(`SELECT data FROM photo p JOIN accountInPhoto aip ON p.id=aip.photoId WHERE aip.accountId=${id};`, function (queryError, queryResults, queryFields) {
+      if (queryError) {
+        console.error("\n\x1b[31mQuery error! \x1b[0m\x1b[32m" + queryError.code + "\x1b[0m\n" + queryError.sqlMessage);
+        return res.sendStatus(500);
+      }
+
+      if (queryResults[0]) {
+        const img = Buffer.from(queryResults[0].data.toString(), "base64");
+
+        res.writeHead(200, {
+          'Content-Type': 'image/jpg',
+          'Content-Length': img.length
+        });
+
+        res.end(img);
+
+      } else {
+        const img = Buffer.from(process.env.DEFAULT_BASE64_PHOTO, 'base64');
+
+        res.writeHead(200, {
+          'Content-Type': 'image/jpg',
+          'Content-Length': img.length
+        });
+
+        res.end(img);
+      }
+
+    });
   });
 });
 
 
-// POST login
-
-
+module.exports = router;
 
 // POST createAdmin - DEBUG!
 router.post('/createAdmin', (req, res) => {
@@ -271,7 +304,7 @@ router.post('/createAdmin', (req, res) => {
 
     pool.query(`INSERT INTO account (username, name, passwordHash, role) values ('${req.body.username}', 'ADMIN', '${hash}', 'ADMIN');`, function (queryError, results, fields) {
       if (queryError) {
-        console.error("\n\x1b[31mQuery error! \x1b[0m\x1b[32m" + queryError.code + "\x1b[0m\n" + queryError.sqlMessage);
+        console.error("Someone tried to create 'admin' account!");
         return res.sendStatus(500);
       }
       res.sendStatus(201);
