@@ -41,7 +41,7 @@ export default function() {
             "id" : queryResults[0][0].messageId,
             "threadId" : queryResults[0][0].threadId,
             "creator" : {
-              "id" : queryResults[0][0].messageId,
+              "id" : queryResults[0][0].accountId,
               "name" : queryResults[0][0].name,
               "username" : queryResults[0][0].username
             },
