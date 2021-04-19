@@ -83,7 +83,7 @@ export default {
         }
 
         await this.$http.put(
-          '/api/updateAccount.js',
+          '/api/updateAccount',
           {
             userId: this.account.id,
             name: this.account.name,

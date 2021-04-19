@@ -156,8 +156,8 @@ router.put('/updateAccount', (req, res) => {
       setter.push(`name='${req.body.name}'`);
       if (isTokenUser) tokenUser.name = req.body.name;
     }
-    if (req.body.username) {
-      // If username exists return 409 - Conflict
+    if (req.body.username && req.body.username !== req.user.username) {
+      // If new username exists return 409 - Conflict
       const usernameExists = await promisePool.query(`SELECT COUNT(*) AS count FROM account WHERE username='${req.body.username}';`);
       if (usernameExists[0][0].count !== 0) return res.sendStatus(409);
 
@@ -168,6 +168,8 @@ router.put('/updateAccount', (req, res) => {
       const newPasswordHash = bcrypt.hashSync(req.body.newPassword, 10);
       setter.push(`passwordHash='${newPasswordHash}'`);
     }
+
+    if (setter.length === 0) return res.sendStatus(400);
 
     // DB TRANSACTION
     pool.getConnection(function (connectionError, connection) {  // DB connection from pool
