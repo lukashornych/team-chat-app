@@ -40,7 +40,7 @@ CREATE TABLE accountInChannel (
 CREATE TABLE registrationInvitation (
     id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
     created TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    code VARCHAR(50) NOT NULL,
+    code VARCHAR(50) NOT NULL UNIQUE,
     accountId INT,
     accepted BOOLEAN NOT NULL DEFAULT FALSE,
     constraint cnfk_registrationInvitation_account foreign key (accountId) REFERENCES account (id)
