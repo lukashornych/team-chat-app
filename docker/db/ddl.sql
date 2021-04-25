@@ -178,10 +178,10 @@ BEGIN
 IF in_threadId IS NULL THEN
 	INSERT INTO thread (channelId) VALUE (in_channelId);
 	INSERT INTO message(threadId, creatorId, content) VALUE (last_insert_id(), in_creatorId, in_content);
-	SELECT m.id AS messageId, m.threadId, m.created, m.content, a.id AS accountId, a.name, a.username FROM message m JOIN account a ON m.creatorId=a.id WHERE m.id=last_insert_id();
+	SELECT m.id AS messageId, c.id AS channelId, m.threadId, m.created, m.content, a.id AS accountId, a.name, a.username FROM message m JOIN account a ON m.creatorId=a.id JOIN thread t ON m.threadId=t.id JOIN channel c ON c.id=t.channelId WHERE m.id=last_insert_id();
 ELSE
 	INSERT INTO message(threadId, creatorId, content) VALUE (in_threadId, in_creatorId, in_content);
-	SELECT m.id AS messageId, m.threadId, m.created, m.content, a.id AS accountId, a.name, a.username FROM message m JOIN account a ON m.creatorId=a.id WHERE m.id=last_insert_id();
+	SELECT m.id AS messageId, c.id AS channelId, m.threadId, m.created, m.content, a.id AS accountId, a.name, a.username FROM message m JOIN account a ON m.creatorId=a.id JOIN thread t ON m.threadId=t.id JOIN channel c ON c.id=t.channelId WHERE m.id=last_insert_id();
 END IF;
 END;
 $$ DELIMITER ;

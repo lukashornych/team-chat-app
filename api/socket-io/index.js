@@ -39,6 +39,7 @@ export default function() {
 
           const emit = {
             "id" : queryResults[0][0].messageId,
+            "channelId": queryResults[0][0].channelId,
             "threadId" : queryResults[0][0].threadId,
             "creator" : {
               "id" : queryResults[0][0].accountId,
