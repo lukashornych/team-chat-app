@@ -252,23 +252,6 @@ CREATE FUNCTION isInThread (in_account INT, in_thread INT)
 $$ DELIMITER ;
 
 
---DELIMITER $$
---CREATE FUNCTION isInThreadOrChannel (in_account INT, in_channel INT, in_thread INT)
---	RETURNS INT
---	READS SQL DATA
---	DETERMINISTIC
---    BEGIN
---		DECLARE output INT;
---		IF in_thread IS NULL THEN
---			SELECT COUNT(*) INTO output FROM accountInChannel WHERE accountId=in_account AND channelId=in_channel AND accountId=in_account;
---            RETURN output;
---		ELSE
---			SELECT COUNT(*) INTO output FROM accountInChannel aic JOIN thread t ON aic.channelId=t.channelId WHERE t.id=in_thread AND aic.accountId=in_account;
---            RETURN output;
---	    END IF;
---    END;
---$$ DELIMITER ;
-
 
 -- VIEWS
 CREATE VIEW allAccounts AS
