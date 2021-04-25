@@ -115,13 +115,12 @@ DELIMITER ;
 
 -- PROCEDURES
 DELIMITER $$
--- passwordHash using bcrypt with 10 salt rounds
-create procedure createAdminAccount(IN in_password VARCHAR(512))
+CREATE PROCEDURE `createAdminAccount`(IN in_username VARCHAR(50), IN in_name VARCHAR(50), IN in_password VARCHAR(512))
 begin
     INSERT INTO account (username, name, passwordHash, role)
-    VALUE ('admin', 'Administrator', in_password, 'ADMIN');
-end;$$
-DELIMITER ;
+    VALUE (in_username, in_name, in_password, 'ADMIN');
+end;
+$$ DELIMITER ;
 
 
 DELIMITER $$
@@ -254,5 +253,20 @@ $$ DELIMITER ;
 
 
 -- VIEWS
+DELIMITER $$
 CREATE VIEW allAccounts AS
 SELECT id, name, username, role FROM account;
+$$ DELIMITER ;
+
+DELIMITER $$
+CREATE VIEW allRegistrationInvitations AS
+SELECT id, code, accepted  FROM registrationInvitation where accepted = false;
+$$ DELIMITER ;
+
+DELIMITER $$
+CREATE VIEW accountsWithChannels AS
+SELECT a.username, a.name, a.role, c.name AS 'channel_name', c.description AS 'channel_description', c.type AS 'channel_type' FROM account a  JOIN accountInChannel aic ON a.id=aic.accountId JOIN channel c ON c.id=aic.channelId ORDER BY a.username, c.name;
+$$ DELIMITER ;
+
+
+
