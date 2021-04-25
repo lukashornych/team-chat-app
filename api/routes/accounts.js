@@ -1,5 +1,7 @@
 const { Router } = require('express');
 
+const authenticateToken = require('../authenticateToken');
+
 
 const router = Router();
 
@@ -15,10 +17,10 @@ const getAccountPhoto = require('./accounts/getAccountPhoto');
 // Routes
 router.post('/register', register);
 router.post('/login', login);
-router.post('/logout', logout);
-router.put('/updateAccount', updateAccount);
-router.get('/getAllAccounts', getAllAccounts);
-router.get('/getAccountPhoto/:id', getAccountPhoto);
+router.post('/logout', authenticateToken, logout);
+router.put('/updateAccount', authenticateToken, updateAccount);
+router.get('/getAllAccounts', authenticateToken, getAllAccounts);
+router.get('/getAccountPhoto/:id', authenticateToken, getAccountPhoto);
 
 
 module.exports = router;

@@ -1,8 +1,7 @@
 const { Router } = require('express');
-const jwt = require('jsonwebtoken');
-const pool = require('../index').connectionDB;
-const promisePool = pool.promise();
+
 const authenticateToken = require('../authenticateToken');
+
 
 const router = Router();
 
@@ -16,13 +15,13 @@ const createChannelInvitation = require('./channels/createChannelInvitation');
 const getChannelsInvitableAccounts = require('./channels/getChannelsInvitableAccounts');
 
 // Routes
-router.post('/createChannel', createChannel);
-router.put('/updateChannel', updateChannel);
-router.get('/getChannels', getChannels);
-router.get('/getChannelInvitations', getChannelInvitations);
-router.post('/acceptChannelInvitation', acceptChannelInvitation);
-router.post('/createChannelInvitation', createChannelInvitation);
-router.get('/getChannelsInvitableAccounts/:channelId', getChannelsInvitableAccounts);
+router.post('/createChannel', authenticateToken, createChannel);
+router.put('/updateChannel', authenticateToken, updateChannel);
+router.get('/getChannels', authenticateToken, getChannels);
+router.get('/getChannelInvitations', authenticateToken, getChannelInvitations);
+router.post('/acceptChannelInvitation', authenticateToken, acceptChannelInvitation);
+router.post('/createChannelInvitation', authenticateToken, createChannelInvitation);
+router.get('/getChannelsInvitableAccounts/:channelId', authenticateToken, getChannelsInvitableAccounts);
 
 
 module.exports = router;

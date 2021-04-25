@@ -1,5 +1,4 @@
 const pool = require('../../index').connectionDB;
-const authenticateToken = require('../../authenticateToken');
 
 
 /**
@@ -7,9 +6,6 @@ const authenticateToken = require('../../authenticateToken');
  ** authenticated by token
  **/
 const acceptChannelInvitation = (req, res) => {
-
-  authenticateToken(req, res, (authenticated) => {
-    if (!authenticated) return res.sendStatus(401);
 
     if (!req.body.userId || !req.body.channelId) return res.sendStatus(400);
 
@@ -28,7 +24,6 @@ const acceptChannelInvitation = (req, res) => {
         res.sendStatus(403);
       }
     });
-  });
 }
 
 module.exports = acceptChannelInvitation;
