@@ -226,8 +226,8 @@ CREATE FUNCTION isInChannel (in_account INT, in_channel INT)
         SELECT count(*) INTO isInChannelDecl FROM accountInChannel WHERE accountId=in_account AND channelId=in_channel;
 
         IF isInChannelDecl = 0 THEN
-			RETURN false;
-		ELSE
+          RETURN false;
+        ELSE
             RETURN true;
         END IF;
     END;
