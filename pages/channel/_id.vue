@@ -33,6 +33,10 @@ export default {
 
   beforeMount () {
     this.socket.on('newMessage', (newMessage) => {
+      if (newMessage.channelId !== this.$route.params.id) {
+        return
+      }
+
       this.messages.unshift(newMessage)
 
       if ((this.selectedThreadId != null) && (newMessage.threadId === this.selectedThreadId)) {

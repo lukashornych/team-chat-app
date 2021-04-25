@@ -141,7 +141,7 @@ export default {
 
     async saveEditingUserRole () {
       await this.$http.$put(
-        '/api/updateAccount.js',
+        '/api/updateAccount',
         {
           userId: this.editingUser.id,
           role: this.editingUser.role
