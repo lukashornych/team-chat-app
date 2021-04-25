@@ -72,7 +72,19 @@ CREATE TABLE message (
     constraint cnfk_message_creator foreign key (creatorId) references account (id)
 );
 
+CREATE TABLE photo (
+  id INT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+  data BLOB NOT NULL,
+  created TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+ );
 
+CREATE TABLE accountInPhoto (
+  accountId INT,
+  photoId INT,
+  PRIMARY KEY (accountId, photoId),
+  constraint cnfk_accountInPhoto_account foreign key (accountId) references account (id),
+  constraint cnfk_accountInPhoto_photo foreign key (photoId) references photo (id)
+);
 
 
 -- TRIGGERS
@@ -86,6 +98,7 @@ begin
     end if;
 end;$$
 DELIMITER ;
+
 
 DELIMITER $$
 create trigger acceptChannelInvitation
@@ -102,11 +115,11 @@ DELIMITER ;
 
 -- PROCEDURES
 DELIMITER $$
--- passwordHash using bcrypt with 12 salt rounds
-create procedure createAdminAccount(in username varchar(50), in `name` varchar(100), in passwordHash varchar(512))
+-- passwordHash using bcrypt with 10 salt rounds
+create procedure createAdminAccount(IN in_password VARCHAR(512))
 begin
     INSERT INTO account (username, name, passwordHash, role)
-    values (username, name, passwordHash, 'ADMIN');
+    VALUE ('admin', 'Administrator', in_password, 'ADMIN');
 end;$$
 DELIMITER ;
 
@@ -173,3 +186,90 @@ ELSE
 END IF;
 END;
 $$ DELIMITER ;
+
+
+DELIMITER $$
+CREATE PROCEDURE addAccountPhoto (in_account INT, IN in_photo BLOB)
+BEGIN
+	DECLARE photoExists INT;
+  DECLARE userHasPhoto INT;
+  DECLARE photoId INT;
+
+	SELECT COUNT(*) INTO photoExists FROM photo WHERE data=in_photo;
+  SELECT COUNT(*) INTO userHasPhoto FROM accountInPhoto WHERE accountId=in_account;
+
+  IF photoExists = 0 THEN
+		INSERT INTO photo (data) VALUE (in_photo);
+    SELECT last_insert_id() INTO photoId;
+	ELSE
+		SELECT id INTO photoId FROM photo WHERE data=in_photo;
+	END IF;
+
+	IF userHasPhoto = 0 THEN
+		INSERT INTO accountInPhoto (accountId, photoId) VALUE (in_account, photoId);
+	ELSE
+		UPDATE accountInPhoto SET photoId=photoId WHERE accountId=in_account;
+  END IF;
+END;
+$$ DELIMITER ;
+
+
+
+-- FUNCTIONS
+
+DELIMITER $$
+CREATE FUNCTION isInChannel (in_account INT, in_channel INT)
+	RETURNS BOOLEAN
+	READS SQL DATA
+	DETERMINISTIC
+    BEGIN
+		DECLARE isInChannelDecl INT;
+        SELECT count(*) INTO isInChannelDecl FROM accountInChannel WHERE accountId=in_account AND channelId=in_channel;
+
+        IF isInChannelDecl = 0 THEN
+			RETURN false;
+		ELSE
+            RETURN true;
+        END IF;
+    END;
+$$ DELIMITER ;
+
+
+DELIMITER $$
+CREATE FUNCTION isInThread (in_account INT, in_thread INT)
+	RETURNS BOOLEAN
+	READS SQL DATA
+	DETERMINISTIC
+    BEGIN
+		DECLARE isInThreadDecl INT;
+		SELECT COUNT(*) INTO isInThreadDecl FROM accountInChannel aic JOIN thread t ON aic.channelId=t.channelId WHERE t.id=in_thread AND aic.accountId=in_account;
+        IF isInThreadDecl != 0 THEN
+			RETURN true;
+		ELSE
+            RETURN false;
+		END IF;
+    END;
+$$ DELIMITER ;
+
+
+--DELIMITER $$
+--CREATE FUNCTION isInThreadOrChannel (in_account INT, in_channel INT, in_thread INT)
+--	RETURNS INT
+--	READS SQL DATA
+--	DETERMINISTIC
+--    BEGIN
+--		DECLARE output INT;
+--		IF in_thread IS NULL THEN
+--			SELECT COUNT(*) INTO output FROM accountInChannel WHERE accountId=in_account AND channelId=in_channel AND accountId=in_account;
+--            RETURN output;
+--		ELSE
+--			SELECT COUNT(*) INTO output FROM accountInChannel aic JOIN thread t ON aic.channelId=t.channelId WHERE t.id=in_thread AND aic.accountId=in_account;
+--            RETURN output;
+--	    END IF;
+--    END;
+--$$ DELIMITER ;
+
+
+-- VIEWS
+CREATE VIEW allAccounts AS
+SELECT id, name, username, role FROM account;

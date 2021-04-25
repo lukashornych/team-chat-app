@@ -1,58 +1,15 @@
-const { express, Router } = require('express');
-const jwt = require('jsonwebtoken');
-const pool = require('../index').connectionDB;
+const { Router } = require('express');
+
 const authenticateToken = require('../authenticateToken');
+
 
 const router = Router();
 
-/**
- ** GET ALL MESSAGES
- ** authenticated by token
- **/
-router.get('/getAllMessages/:id', (req, res) => {
-  authenticateToken(req, res, (authenticated) => {
-    if (!authenticated) return res.sendStatus(401);
+// Functions requires
+const getAllMessages = require('./messages/getAllMessages');
 
-    const id = req.params.id;
-
-    const thread = req.query.thread;
-
-    let dotaz = "";
-    if (thread === "true") {
-      dotaz = `WHERE t.id=${id}`;
-    } else {
-      dotaz = `WHERE ch.id=${id}`;
-    }
-
-    pool.query(`SELECT m.id AS messageId, m.threadId, m.created, m.content, a.id AS accountId, a.name, a.username ` +
-                `FROM channel ch JOIN thread t ON t.channelId=ch.id `+
-                `JOIN message m ON m.threadId=t.id ` +
-                `JOIN account a ON m.creatorId=a.id ` +
-                `${dotaz} ORDER BY m.id DESC;`, function (queryError, queryResults, queryFields) {
-      if (queryError) {
-        console.error(queryError);
-        return res.sendStatus(500);
-      }
-
-      let ret = [];
-      queryResults.forEach((result) => {
-        ret.push({
-          "id" : result.messageId,
-          "threadId" : result.threadId,
-          "creator" : {
-            "id" : result.accountId,
-            "name" : result.name,
-            "username" : result.username
-          },
-          "created" : result.created,
-          "content" : result.content
-        });
-      });
-
-      res.status(200).json(ret);
-    });
-  });
-});
+// Routes
+router.get('/getAllMessages/:id', authenticateToken, getAllMessages);
 
 
 module.exports = router;
