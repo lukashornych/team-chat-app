@@ -17,7 +17,7 @@ const createChannel = async (req, res) => {
   const description = req.body.description;
   const userIds = req.body.userIds;
 
-  // 1st insert inputs
+  // 1st insert inputs - Vytvoření kanálu
   let insert = "name, type";
   let insertValues = `'${name}', '${type}'`;
 
@@ -26,7 +26,7 @@ const createChannel = async (req, res) => {
     insertValues += `, '${description}'`;
   }
 
-  // 2nd insert inputs
+  // 2nd insert inputs - Přiřazení uživatelů ke kanálu
   let accountsInChannel = `(LAST_INSERT_ID(), '${req.user.id}')`;   // Sestavení vložení účtů
   if (userIds) {
     userIds.forEach((account) => {
@@ -34,6 +34,7 @@ const createChannel = async (req, res) => {
     });
   }
 
+  // DB TRANSACTION
   pool.getConnection(function (connectionError, connection) {  // DB connection from pool
     if (connectionError) {
       console.error("\n\x1b[31mQuery error! \x1b[0m\x1b[32m" + connectionError.code + "\x1b[0m\n" + connectionError.sqlMessage);
@@ -46,6 +47,7 @@ const createChannel = async (req, res) => {
         return res.sendStatus(500);
       }
 
+      // 1st query
       connection.query(`INSERT INTO channel(${insert}) VALUE (${insertValues});`, function (queryError, queryResults, queryFields) {
         if (queryError) {
           console.error("\n\x1b[31mQuery error! \x1b[0m\x1b[32m" + queryError.code + "\x1b[0m\n" + queryError.sqlMessage);
@@ -53,6 +55,7 @@ const createChannel = async (req, res) => {
         }
       });
 
+      // 2nd query
       connection.query(`INSERT INTO accountInChannel(channelId, accountId) VALUES ${accountsInChannel};`, function (queryError, queryResults, queryFields) {
         if (queryError) {
           console.error("\n\x1b[31mQuery error! \x1b[0m\x1b[32m" + queryError.code + "\x1b[0m\n" + queryError.sqlMessage);
@@ -68,7 +71,7 @@ const createChannel = async (req, res) => {
           });
         }
 
-        res.sendStatus(200);
+        res.sendStatus(201);
       });
     });
   });

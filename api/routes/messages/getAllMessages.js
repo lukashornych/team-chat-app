@@ -12,6 +12,7 @@ const getAllMessages = async (req, res) => {
 
   const thread = req.query.thread;
 
+  // Vytvoření dotazu - rozlišení, zda selektovat podle vlákna, či podle channelu
   let dotaz = "";
   if (thread === "true") {
     const isInThread = await promisePool.query(`SELECT isInThread(${req.user.id}, ${id}) AS output;`);

@@ -22,7 +22,6 @@ const generateRegistrationInvitation = (req, res) => {
     insert += "," + array.toString();
   }
 
-  generateString(10);
 
   pool.query(`INSERT INTO registrationInvitation(code) VALUES ${insert};`, function (queryError, queryResults, queryFields) {
     if (queryError) {
@@ -30,11 +29,12 @@ const generateRegistrationInvitation = (req, res) => {
       res.sendStatus(500);
     }
 
-    res.sendStatus(200);
+    res.sendStatus(201);
   });
 }
 
 
+// Generace náhodného řetězce
 function generateString(length) {
   let result = "";
 

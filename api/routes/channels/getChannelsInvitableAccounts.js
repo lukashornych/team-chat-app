@@ -10,7 +10,7 @@ const getChannelsInvitableAccounts = async (req, res) => {
 
   const channelId = req.params.channelId;
 
-  // USER cannot update PUBLIC_CHANNEL
+  // USER cannot see PUBLIC_CHANNEL inviable accounts
   const channelType = await promisePool.query(`SELECT type FROM channel WHERE id=${channelId};`);
   if (req.user.role === "USER" && channelType[0][0].type === "PUBLIC_CHANNEL") return res.sendStatus(403);
 

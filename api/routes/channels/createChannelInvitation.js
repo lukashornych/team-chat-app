@@ -17,9 +17,10 @@ const createChannelInvitation = async (req, res) => {
   const isInChannel = await promisePool.query(`SELECT isInChannel(${req.user.id}, ${channelId}) AS output;`);
   if (isInChannel[0][0].output === 0) return res.sendStatus(403);
 
-  // USER cannot update PUBLIC_CHANNEL
+  // USER cannot invite to PUBLIC_CHANNEL
   const channelType = await promisePool.query(`SELECT type FROM channel WHERE id=${channelId};`);
   if (req.user.role === "USER" && channelType[0][0].type === "PUBLIC_CHANNEL") return res.sendStatus(403);
+
 
   if (userIds.length !== 0) {
 
@@ -34,7 +35,7 @@ const createChannelInvitation = async (req, res) => {
         return res.sendStatus(500);
       }
 
-      res.sendStatus(200);
+      res.sendStatus(201);
     });
   }
 }

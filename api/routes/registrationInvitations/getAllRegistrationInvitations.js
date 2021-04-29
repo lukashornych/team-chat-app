@@ -7,7 +7,7 @@ const pool = require('../../index').connectionDB;
  **/
 const getAllRegistrationInvitations = (req, res) => {
 
-  // only ADMIN can see registration invitation
+  // only ADMIN can see registration invitations
   if (req.user.role !== "ADMIN") return res.sendStatus(403);
 
   pool.query(`SELECT * FROM allRegistrationInvitations;`, function (queryError, queryResults, queryFields) {

@@ -18,6 +18,7 @@ const login = (req, res) => {
     }
 
     if(queryResults[0]) {
+      // Ověření hesla
       bcrypt.compare(password, queryResults[0].passwordHash, (compareError, compareResult) => {
         if (compareError) {
           console.error(compareError);
@@ -32,6 +33,7 @@ const login = (req, res) => {
             role: queryResults[0].role
           }
 
+          // Vytvoření tokenu
           const token = jwt.sign(body, process.env.TOKEN_PRIVATE, {expiresIn: "24h"} ); //, {expiresIn: "1h"}
 
           const cutToken = token.split(".");
@@ -42,11 +44,11 @@ const login = (req, res) => {
           res.sendStatus(200);
 
         } else {
-          res.sendStatus(403); // ??????????
+          res.sendStatus(403);
         }
       });
 
-    } else {
+    } else {  // Zadané uživatelské jméno neexistuje
       res.sendStatus(400);
     }
   });

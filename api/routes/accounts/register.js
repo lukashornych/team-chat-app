@@ -25,13 +25,13 @@ const register = (req, res) => {
         return res.sendStatus(500);
       }
 
-      if (queryResults[0][0].output === "done") {
-        res.sendStatus(200);
+      if (queryResults[0][0].output === "done") {   // Zaregistrováno
+        res.sendStatus(201);
 
-      } else if (queryResults[0][0].output === "unknown-code") {
+      } else if (queryResults[0][0].output === "unknown-code") {  // Špatný registrační klíč
         res.status(400).send("unknown-code");
 
-      } else if (queryResults[0][0].output === "user-exists") {
+      } else if (queryResults[0][0].output === "user-exists") {   // Uživatelské jméno existuje
         res.status(400).send("user-exists");
 
       } else {

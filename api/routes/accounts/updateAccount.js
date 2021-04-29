@@ -16,6 +16,7 @@ const updateAccount = async (req, res) => {
   if (req.user.role !== "ADMIN" && req.body.userId) return res.sendStatus(403);
   if (req.user.role !== "ADMIN" && req.body.role) return res.sendStatus(403);
 
+  // Rozhodnutí, zda použít uživatele v tokenu, nebo v požadavku
   let isTokenUser = false;
   let userId = req.body.userId;
   if (!userId) {
@@ -27,6 +28,7 @@ const updateAccount = async (req, res) => {
   delete tokenUser.iat;
   delete tokenUser.exp;
 
+  // Vytvoření požadavku do databáze
   let setter = [];     // SET statement creation
 
   if (req.body.role) {
@@ -58,14 +60,14 @@ const updateAccount = async (req, res) => {
       console.error("\n\x1b[31mQuery error! \x1b[0m\x1b[32m" + connectionError.code + "\x1b[0m\n" + connectionError.sqlMessage);
       return res.sendStatus(500);
     }
-
+    // transaction BEGIN
     connection.beginTransaction(function (transactionError) { // BEGIN TRANSACTION
       if (transactionError) {
         console.error("\n\x1b[31mQuery transaction error! \x1b[0m\x1b[32m" + transactionError.code + "\x1b[0m\n" + transactionError.sqlMessage);
         return res.sendStatus(500);
       }
 
-      // Pokud existuje name || username || newPassword || role
+      // Update name || username || newPassword || role
       if (req.body.name || req.body.username || req.body.newPassword || req.body.role) {
         connection.query(`UPDATE account SET ${setter.toString()} WHERE id='${userId}';`, function (queryError, queryResults, queryFields) {
           if (queryError) {
@@ -84,7 +86,7 @@ const updateAccount = async (req, res) => {
         });
       }
 
-      // Pokud existuje newPhoto
+      // Update newPhoto
       if (req.body.newPhoto) {
         connection.query(`CALL addAccountPhoto (${userId}, '${req.body.newPhoto}');`, function (queryError, queryResults, queryFields) {
           if (queryError) {
@@ -94,6 +96,7 @@ const updateAccount = async (req, res) => {
         });
       }
 
+      // transaction COMMIT
       connection.commit(function (commitError) {  // COMMIT TRANSACTION
         if (commitError) {
           return connection.rollback(function () {
